@@ -1,0 +1,6 @@
+# Local scripts (run on your laptop only, never on Vercel)
+-r ../backend/requirements.txt
+youtube-transcript-api
+yt-dlp
+faster-whisper
+av<16  # av 16+ breaks faster-whisper 1.2.x

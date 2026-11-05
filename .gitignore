@@ -1,0 +1,19 @@
+# Secrets
+.env
+*.key
+secrets/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node (frontend, later)
+node_modules/
+dist/
+
+# Temporary audio for the Whisper fallback
+scripts/.audio_tmp/
+
+# OS
+.DS_Store

@@ -1,0 +1,5 @@
+# Backend: API clients only (deployed on Vercel). No torch / transformers here.
+langchain
+langchain-openai
+langsmith
+python-dotenv
