@@ -1,0 +1,184 @@
+[
+  {
+    "id": "q01",
+    "question": "How much protein per day should I eat to build muscle?",
+    "answer": "For general muscle building, it's recommended to consume between 120 to 165 grams of protein per day. If you're bulking, you might want to aim for 1 gram of protein per pound of body weight, which would be between 125 and 180 grams for someone weighing 180 lbs. When cutting, increasing protein intake to 1.8 to 2.7 grams per kilogram (or 0.8 to 1.2 grams per pound) is suggested to help preserve muscle mass [1, 2].",
+    "reference_answer": "Active people need about 1.2-2.0 g of protein per kg of body weight per day (Institute of Human Anatomy). Jeff Nippard gives roughly 125-180 g per day for an 80 kg person when bulking, and more (1.8-2.7 g/kg) when cutting. The 0.8 g/kg recommendation is only a minimum.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "lu_BObG6dj8",
+      "2WvBe_rsg_Y",
+      "2WvBe_rsg_Y"
+    ],
+    "latency_seconds": 3.68
+  },
+  {
+    "id": "q02",
+    "question": "Why is the 0.8 g/kg protein recommendation not enough for people who lift?",
+    "answer": "The 0.8 g/kg protein recommendation is not enough for people who lift because it does not consider the increased protein needs associated with weight training and higher intensity exercise. This amount is insufficient to support or maximize muscle growth, as many protein experts advocate for higher intakes based on evidence showing health benefits with increased protein consumption [How Much Protein You Really Need (According to Science), 4:20].",
+    "reference_answer": "0.8 g/kg per day is the amount needed to avoid deficiency and keep basic body functions. It is not enough for active people or people doing intense exercise, who need about 1.2-2.0 g/kg per day.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y",
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y"
+    ],
+    "latency_seconds": 2.66
+  },
+  {
+    "id": "q03",
+    "question": "How many grams of protein would an 80 kg person need at the WHO recommendation of 0.8 g per kg?",
+    "answer": "An 80 kg person would need about 64 grams of protein per day at the WHO recommendation of 0.8 g per kg [The Smartest Way To Use Protein To Build Muscle (Science Explained), 0:48].",
+    "reference_answer": "About 64 g per day (0.8 x 80). The auto captions say '655 g', which is a caption error. A good answer gives about 64 g or flags the number as wrong.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y",
+      "2WvBe_rsg_Y"
+    ],
+    "latency_seconds": 1.88
+  },
+  {
+    "id": "q04",
+    "question": "How does creatine work in the body?",
+    "answer": "Creatine works in the body by being converted to phosphocreatine, which serves as a small energy reservoir. About 95 percent of creatine is stored in skeletal muscles, and during high-intensity exercise, phosphocreatine can quickly regenerate ATP (adenosine triphosphate), the energy currency of cells. This process helps provide extra energy to contracting muscles, facilitating improved performance and fatigue resistance during physical activities [1, 3:27][4, 4:16].",
+    "reference_answer": "About 95% of creatine is stored in skeletal muscle. Creatine kinase converts it into phosphocreatine, a small energy reservoir that donates a phosphate to ADP to remake ATP during high-intensity exercise. Supplementing raises creatine and phosphocreatine stores, giving an extra energy boost. Creatine monohydrate is the most researched form.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA"
+    ],
+    "latency_seconds": 2.15
+  },
+  {
+    "id": "q05",
+    "question": "How deep should I squat for muscle growth?",
+    "answer": "You should aim to squat down to at least somewhere close to parallel. A study indicated that while both half squats and deep squats resulted in similar growth in the quads, the glutes and abductors grew significantly more in the deep squat group [How to PROPERLY Squat for Growth (4 Easy Steps) | Jeremy Ethier | 3:25].",
+    "reference_answer": "At least close to parallel. A 2019 study found deep squats grew the glutes and adductors more than half squats, while quad growth was similar. Knees going over the toes is fine as long as they track in the same direction as the toes.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "gcNh17Ckjgg",
+      "gcNh17Ckjgg",
+      "gcNh17Ckjgg",
+      "NLqq_dJB0iM"
+    ],
+    "latency_seconds": 1.51
+  },
+  {
+    "id": "q06",
+    "question": "How many sets per muscle per week do I need to build muscle?",
+    "answer": "The optimal range for sets per muscle per week is generally between 10 to 20 sets. Some studies suggest that even 5 to 9 sets can provide about 80% of the maximum growth, while 10 or more sets lead to the most growth [How Many Sets Do You Really Need to Build Muscle? | Jeremy Ethier | 2:00][How To Build Muscle (Explained In 5 Levels) | Jeff Nippard | 6:36][What EXACTLY Is Progressive Overload? | PictureFit | 2:22].",
+    "reference_answer": "About 10-20 hard sets per muscle per week maximizes growth for most people. In the 2017 meta-analysis, 5-9 weekly sets still gave about 80% of the maximum growth, and even 3 sets per week can build some muscle.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "PQWw0BJc5LQ",
+      "PQWw0BJc5LQ",
+      "lu_BObG6dj8",
+      "HiJ1uLuTNxo"
+    ],
+    "latency_seconds": 1.97
+  },
+  {
+    "id": "q07",
+    "question": "What is progressive overload?",
+    "answer": "Progressive overload is a method of strength training that involves gradually increasing the stress placed upon the musculoskeletal and nervous system. This can be achieved by increasing the resistance or weight used in exercises, or by increasing the number of repetitions performed. The goal is to provide a stimulus for muscle adaptation and growth over time [What EXACTLY Is Progressive Overload? | PictureFit | 0:00][4]",
+    "reference_answer": "Gradually increasing the stress on your muscles over time so the body keeps adapting. The most common way is adding weight; another is adding reps. Doing the same workout every time makes progress stop.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "HiJ1uLuTNxo",
+      "HiJ1uLuTNxo",
+      "HiJ1uLuTNxo",
+      "U9ENCvFf9yQ"
+    ],
+    "latency_seconds": 2.16
+  },
+  {
+    "id": "q08",
+    "question": "Is cardio or weight lifting better for fat loss?",
+    "answer": "The video suggests that both cardio and weight lifting have their benefits for fat loss. While aerobic exercise tends to burn more calories per hour, weight training can lead to muscle gain, which may not reflect immediate weight loss but is beneficial for body composition. Ultimately, the best exercise is the one you can do consistently and enjoy [The Best Exercises for Fat Loss: Cardio vs Weight Lifting, 1:07][1].",
+    "reference_answer": "Combining aerobic and resistance training gives the most fat loss (though not always the most weight loss, because you gain muscle). Good nutrition is also essential, and the best exercise is the one you can do consistently.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ"
+    ],
+    "latency_seconds": 1.93
+  },
+  {
+    "id": "q09",
+    "question": "How does sleep help muscle growth?",
+    "answer": "Sleep helps muscle growth primarily through the spike in human growth hormone (HGH) that occurs during deep sleep. This spike aids in tissue repair and the building of skeletal muscles, as well as supporting protein synthesis in the body. Proper sleep habits are crucial for optimizing the natural release of growth hormone, which is essential for recovery and muscle growth [How Sleep Powers Muscle Growth, 7:20; 2:00].",
+    "reference_answer": "The first 1-2 hours of deep sleep bring a spike in growth hormone, which helps repair tissue and build skeletal muscle. Going to bed later than usual can reduce that release even with the same total sleep, so a consistent bedtime and wake time matter.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "pUZvynhxYb4",
+      "pUZvynhxYb4",
+      "pUZvynhxYb4",
+      "2tM1LFFxeKg"
+    ],
+    "latency_seconds": 1.68
+  },
+  {
+    "id": "q10",
+    "question": "What is a push pull legs split?",
+    "answer": "A push pull legs split is a workout routine that divides your workouts into three specific sessions: \n\n1. **Push Workout**: Focuses on upper body pushing muscles (chest, shoulders, triceps).\n2. **Pull Workout**: Targets upper body pulling muscles (back, biceps).\n3. **Leg Workout**: Concentrates on training the legs (quads, hamstrings, glutes, calves) [Bodybuilding Simplified: Push Pull Legs (Full Explanation + Free Training Plan), 0:38].",
+    "reference_answer": "Three workouts: push (chest, shoulders, triceps), pull (back, biceps) and legs (quads, hamstrings, glutes, calves). Pros: focus on specific muscles and lots of recovery time. A con: two compound presses (chest and shoulders) on the same day, so the second is weaker.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "TJHZI3McmE4",
+      "TJHZI3McmE4",
+      "TJHZI3McmE4",
+      "TJHZI3McmE4"
+    ],
+    "latency_seconds": 1.83
+  },
+  {
+    "id": "q11",
+    "question": "How should I warm up before lifting weights?",
+    "answer": "A proper warm-up is essential before lifting weights to reduce stiffness, awaken motor units, and raise the temperature of the muscles and joints. It should include warming up the specific muscles you'll be training. For lower body workouts, cycling is suggested as a better option than walking on a treadmill. For upper body workouts, a shorter warm-up focusing on the specific muscles is likely sufficient [How to PROPERLY Warm Up Before Weights, 2:00][1]. Additionally, it's important to warm up key joints like shoulders, wrists, knees, and hips without spending too much time on it [Step by Step Beginner Gym Guide, 3:37].",
+    "reference_answer": "Three parts: (1) for lower body, about 5 minutes of easy cycling at 50-60% of max heart rate; (2) dynamic stretches rather than long static stretches; (3) warm-up sets: 12 reps at ~50% of working weight, 8 reps at the same weight a bit faster, 3-4 reps at ~70%, 1 rep at ~90%, then rest 2 minutes.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "MncQw-H3MPU",
+      "MncQw-H3MPU",
+      "MncQw-H3MPU",
+      "U9ENCvFf9yQ"
+    ],
+    "latency_seconds": 2.82
+  },
+  {
+    "id": "q12",
+    "question": "How do I avoid losing muscle while dieting?",
+    "answer": "To avoid losing muscle while dieting, consider the following strategies:\n\n1. Maintain a balance between muscle protein synthesis and breakdown.\n2. Aim for a controlled rate of weight loss: start with 1 to 1.5% of body weight per week, then reduce to around 1% in the middle, and 0.5% toward the end of the diet [How To Prevent Muscle Loss When Dieting (Science Explained), 3:41].\n3. Increase your protein intake, with recommendations suggesting around 2.4 grams of protein per kilogram of body weight [How To Prevent Muscle Loss When Dieting (Science Explained), 3:41].\n\nThese strategies can help preserve muscle during a caloric deficit.",
+    "reference_answer": "Maintain your strength: keep the heavy compound lifts, mostly 6-12 reps, and don't switch to high reps. When recovery drops, cut a few sets before cutting the weight. Diet more slowly rather than with a large deficit.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "EOh2R-89qqg",
+      "EOh2R-89qqg",
+      "EOh2R-89qqg",
+      "EOh2R-89qqg"
+    ],
+    "latency_seconds": 2.46
+  },
+  {
+    "id": "q13",
+    "question": "What is a good keto dinner recipe?",
+    "answer": "The videos don't cover it.",
+    "reference_answer": "The videos don't cover recipes. The bot should say it can't find this in the videos instead of inventing an answer.",
+    "expected_video_retrieved": null,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "U9ENCvFf9yQ",
+      "EOh2R-89qqg",
+      "U9ENCvFf9yQ"
+    ],
+    "latency_seconds": 1.19
+  }
+]

@@ -1,0 +1,210 @@
+[
+  {
+    "id": "q01",
+    "question": "How much protein per day should I eat to build muscle?",
+    "answer": "To build muscle, the recommended protein intake is generally between 1.6 to 2.2 grams of protein per kilogram of body weight per day, which translates to about 0.7 to 1 gram per pound. For example, if you weigh 75 kg (165 lbs), you should aim for approximately 120 to 165 grams of protein per day for general muscle building. [How To Build Muscle (Explained In 5 Levels), 2:42]",
+    "reference_answer": "Active people need about 1.2-2.0 g of protein per kg of body weight per day (Institute of Human Anatomy). Jeff Nippard gives roughly 125-180 g per day for an 80 kg person when bulking, and more (1.8-2.7 g/kg) when cutting. The 0.8 g/kg recommendation is only a minimum.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "lu_BObG6dj8",
+      "2WvBe_rsg_Y",
+      "2WvBe_rsg_Y",
+      "Pok0Jg2JAkE",
+      "lu_BObG6dj8"
+    ],
+    "latency_seconds": 2.75
+  },
+  {
+    "id": "q02",
+    "question": "Why is the 0.8 g/kg protein recommendation not enough for people who lift?",
+    "answer": "The 0.8 g/kg protein recommendation is not enough for people who lift because it does not consider the increased protein needs associated with weight training and higher intensity exercise. Many protein experts suggest that this amount is insufficient to support, much less maximize, muscle growth. For those engaged in resistance training, a higher protein intake is necessary to maintain muscle mass and support recovery. [The Smartest Way To Use Protein To Build Muscle (Science Explained), 0:48]",
+    "reference_answer": "0.8 g/kg per day is the amount needed to avoid deficiency and keep basic body functions. It is not enough for active people or people doing intense exercise, who need about 1.2-2.0 g/kg per day.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y",
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y",
+      "EOh2R-89qqg",
+      "Pok0Jg2JAkE"
+    ],
+    "latency_seconds": 1.97
+  },
+  {
+    "id": "q03",
+    "question": "How many grams of protein would an 80 kg person need at the WHO recommendation of 0.8 g per kg?",
+    "answer": "An 80 kg person would need about 64 grams of protein per day at the WHO recommendation of 0.8 g per kg. [The Smartest Way To Use Protein To Build Muscle (Science Explained), 0:48]",
+    "reference_answer": "About 64 g per day (0.8 x 80). The auto captions say '655 g', which is a caption error. A good answer gives about 64 g or flags the number as wrong.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y",
+      "2WvBe_rsg_Y",
+      "Pok0Jg2JAkE",
+      "2WvBe_rsg_Y"
+    ],
+    "latency_seconds": 1.56
+  },
+  {
+    "id": "q04",
+    "question": "How does creatine work in the body?",
+    "answer": "Creatine works in the body by being converted to phosphocreatine through the action of the enzyme creatine kinase. Phosphocreatine serves as a small energy reservoir, providing high-energy phosphate to regenerate ATP (adenosine triphosphate) during high-intensity exercises. This process allows for an increased resynthesis of phosphocreatine, which helps supply contracting muscles with extra energy during activities like sprinting or weightlifting. Overall, creatine supplementation increases the total amount of creatine in the muscles, enhancing performance and fatigue resistance during intense physical activities. \n\n[What is creatine and how does it work?, 0:50]  \n[What is creatine and how does it work?, 1:42]  \n[What is creatine and how does it work?, 3:27]  \n[What is creatine and how does it work?, 4:16]",
+    "reference_answer": "About 95% of creatine is stored in skeletal muscle. Creatine kinase converts it into phosphocreatine, a small energy reservoir that donates a phosphate to ADP to remake ATP during high-intensity exercise. Supplementing raises creatine and phosphocreatine stores, giving an extra energy boost. Creatine monohydrate is the most researched form.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA",
+      "EDjDpcdWFlA"
+    ],
+    "latency_seconds": 3.09
+  },
+  {
+    "id": "q05",
+    "question": "How deep should I squat for muscle growth?",
+    "answer": "You should aim to squat down to at least somewhere close to parallel. A study indicated that while both half squats and deep squats resulted in similar growth in the quads, the glutes and abductors grew significantly more in the deep squat group. If you use a narrower stance, you may be able to get a little deeper, while a wider stance will be closer to parallel. [How to PROPERLY Squat for Growth (4 Easy Steps), 3:25]",
+    "reference_answer": "At least close to parallel. A 2019 study found deep squats grew the glutes and adductors more than half squats, while quad growth was similar. Knees going over the toes is fine as long as they track in the same direction as the toes.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "gcNh17Ckjgg",
+      "gcNh17Ckjgg",
+      "gcNh17Ckjgg",
+      "NLqq_dJB0iM",
+      "gcNh17Ckjgg",
+      "gcNh17Ckjgg"
+    ],
+    "latency_seconds": 1.93
+  },
+  {
+    "id": "q06",
+    "question": "How many sets per muscle per week do I need to build muscle?",
+    "answer": "The optimal range for building muscle is around 10 to 20 sets per muscle group per week. Some studies suggest that even 5 to 9 sets can provide about 80% of the maximum growth. For example, for the chest, this could be structured as three sets of bench press and three sets of flies each week. [How Many Sets Do You Really Need to Build Muscle?, 7:57] [How To Build Muscle (Explained In 5 Levels), 6:36] [What EXACTLY Is Progressive Overload?, 2:22]",
+    "reference_answer": "About 10-20 hard sets per muscle per week maximizes growth for most people. In the 2017 meta-analysis, 5-9 weekly sets still gave about 80% of the maximum growth, and even 3 sets per week can build some muscle.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "PQWw0BJc5LQ",
+      "PQWw0BJc5LQ",
+      "lu_BObG6dj8",
+      "HiJ1uLuTNxo",
+      "PQWw0BJc5LQ",
+      "PQWw0BJc5LQ"
+    ],
+    "latency_seconds": 2.21
+  },
+  {
+    "id": "q07",
+    "question": "What is progressive overload?",
+    "answer": "Progressive overload is a method of strength training that involves gradually increasing the stress placed upon the musculoskeletal and nervous system. This can be achieved by making exercises more difficult over time, which stimulates muscle adaptation and growth. The most common method is to increase the resistance or weight used in exercises, but it can also involve increasing the number of repetitions or sets, or improving the control of movements. The goal is to continuously challenge the muscles to promote growth and strength improvements. [What EXACTLY Is Progressive Overload?, 0:00] [What EXACTLY Is Progressive Overload?, 1:08] [Step by Step Beginner Gym Guide (Full Training Plan + All You Need To Know), 6:53] [How To Build Muscle (Explained In 5 Levels), 1:40]",
+    "reference_answer": "Gradually increasing the stress on your muscles over time so the body keeps adapting. The most common way is adding weight; another is adding reps. Doing the same workout every time makes progress stop.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "HiJ1uLuTNxo",
+      "HiJ1uLuTNxo",
+      "HiJ1uLuTNxo",
+      "U9ENCvFf9yQ",
+      "lu_BObG6dj8",
+      "lu_BObG6dj8"
+    ],
+    "latency_seconds": 2.54
+  },
+  {
+    "id": "q08",
+    "question": "Is cardio or weight lifting better for fat loss?",
+    "answer": "Both cardio and weight lifting have their benefits for fat loss. Aerobic exercise has a slight advantage for fat loss but may lead to muscle loss as well. Weight training helps preserve muscle mass, which is important since muscle burns calories. The best approach for fat loss is to combine both aerobic and resistance training, as this allows individuals to lose the most fat while potentially gaining muscle. Ultimately, the most effective exercise is the one that you can do consistently and enjoy. [The Best Exercises for Fat Loss: Cardio vs Weight Lifting, 4:26]",
+    "reference_answer": "Combining aerobic and resistance training gives the most fat loss (though not always the most weight loss, because you gain muscle). Good nutrition is also essential, and the best exercise is the one you can do consistently.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ",
+      "GIFSoEajOPQ"
+    ],
+    "latency_seconds": 2.28
+  },
+  {
+    "id": "q09",
+    "question": "How does sleep help muscle growth?",
+    "answer": "Sleep helps muscle growth primarily through the release of human growth hormone (HGH), which occurs during the first one to two hours of deep sleep. This spike in HGH is crucial for tissue repair and muscle building. Additionally, adequate sleep supports protein synthesis and overall recovery processes that are vital for muscle growth. Consistency in sleep patterns is also important, as irregular sleep can diminish the release of growth hormone, impacting recovery and muscle development. [How Sleep Powers Muscle Growth, 7:20] [How Sleep Powers Muscle Growth, 0:00] [How Sleep Powers Muscle Growth, 3:38] [How Sleep Powers Muscle Growth, 8:34]",
+    "reference_answer": "The first 1-2 hours of deep sleep bring a spike in growth hormone, which helps repair tissue and build skeletal muscle. Going to bed later than usual can reduce that release even with the same total sleep, so a consistent bedtime and wake time matter.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "pUZvynhxYb4",
+      "pUZvynhxYb4",
+      "pUZvynhxYb4",
+      "2tM1LFFxeKg",
+      "pUZvynhxYb4",
+      "pUZvynhxYb4"
+    ],
+    "latency_seconds": 2.86
+  },
+  {
+    "id": "q10",
+    "question": "What is a push pull legs split?",
+    "answer": "A push pull legs split is a workout routine that divides workouts into three specific sessions: \n\n1. **Push Workout**: Focuses on upper body pushing muscles, including the chest, shoulders, and triceps.\n2. **Pull Workout**: Targets upper body pulling muscles, such as the back and biceps.\n3. **Leg Workout**: Concentrates on training the legs, including quads, hamstrings, glutes, and calves.\n\nThis split allows for focused training on specific muscle groups and provides ample recovery time between sessions. [Bodybuilding Simplified: Push Pull Legs (Full Explanation + Free Training Plan), 0:38]",
+    "reference_answer": "Three workouts: push (chest, shoulders, triceps), pull (back, biceps) and legs (quads, hamstrings, glutes, calves). Pros: focus on specific muscles and lots of recovery time. A con: two compound presses (chest and shoulders) on the same day, so the second is weaker.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "TJHZI3McmE4",
+      "TJHZI3McmE4",
+      "TJHZI3McmE4",
+      "TJHZI3McmE4",
+      "TJHZI3McmE4",
+      "TJHZI3McmE4"
+    ],
+    "latency_seconds": 2.51
+  },
+  {
+    "id": "q11",
+    "question": "How should I warm up before lifting weights?",
+    "answer": "To properly warm up before lifting weights, follow these steps:\n\n1. **General Warm-Up**: Start with a light warm-up to reduce stiffness and raise the temperature of your muscles and joints. Focus on important joints like shoulders, wrists, knees, and hips. This doesn't need to be extensive; a few minutes of light movement is sufficient. [Step by Step Beginner Gym Guide (Full Training Plan + All You Need To Know), 3:37]\n\n2. **Specific Warm-Up**: Perform two warm-up sets followed by two weight acclimation sets for the specific exercise you will be doing:\n   - **Set 1**: 12 reps at about 50% of your working weight, rest for 1 minute.\n   - **Set 2**: 8 reps at the same weight, slightly faster pace, rest for 1 minute.\n   - **Set 3**: 3-4 reps at about 70% of your working weight, rest for 1 minute.\n   - **Set 4**: 1 rep at about 90% of your working weight, rest for 2 minutes before starting your working set. [How to PROPERLY Warm Up Before Weights, 5:50]\n\n3. **Foam Rolling**: Use a foam roller to loosen up your upper back and release tension in your neck. Roll up and down for a bit, then place the foam roller between your shoulder blades, extend over it while breathing deeply, and repeat lower on your back. [How to PROPERLY Warm Up Before Weights, 5:17]\n\nThese steps will help prepare your muscles and joints for the heavy lifting ahead. [How to PROPERLY Warm Up Before Weights, 0:00]",
+    "reference_answer": "Three parts: (1) for lower body, about 5 minutes of easy cycling at 50-60% of max heart rate; (2) dynamic stretches rather than long static stretches; (3) warm-up sets: 12 reps at ~50% of working weight, 8 reps at the same weight a bit faster, 3-4 reps at ~70%, 1 rep at ~90%, then rest 2 minutes.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "MncQw-H3MPU",
+      "MncQw-H3MPU",
+      "MncQw-H3MPU",
+      "U9ENCvFf9yQ",
+      "MncQw-H3MPU",
+      "MncQw-H3MPU"
+    ],
+    "latency_seconds": 5.17
+  },
+  {
+    "id": "q12",
+    "question": "How do I avoid losing muscle while dieting?",
+    "answer": "To avoid losing muscle while dieting, consider these four strategies:\n\n1. **Maintain Strength Levels**: Focus on preserving your strength in the gym rather than increasing reps to burn more calories. This helps ensure that you are providing the necessary stimulus for muscle retention. [How To Prevent Muscle Loss When Dieting (Science Explained), 2:14]\n\n2. **Control Rate of Weight Loss**: Aim for a weight loss rate of 1 to 1.5% of your body weight per week at the start of your diet, reducing to around 1% in the middle, and 0.5% in the final weeks. For example, a 200-pound individual could lose up to 3 pounds per week initially, tapering down to 1 pound per week later. [How To Prevent Muscle Loss When Dieting (Science Explained), 5:41]\n\n3. **Increase Protein Intake**: Aim for a protein intake of around 2.4 grams per kilogram of body weight to support muscle retention. [How To Prevent Muscle Loss When Dieting (Science Explained), 5:41]\n\n4. **Manage Caloric Deficit**: Be mindful of the size of your caloric deficit and your starting body fat. A larger deficit can be more aggressive at the beginning of a diet, but as you get leaner, you should slow down the rate of weight loss. [How To Prevent Muscle Loss When Dieting (Science Explained), 5:07]\n\nBy implementing these strategies, you can help minimize muscle loss during a caloric deficit.",
+    "reference_answer": "Maintain your strength: keep the heavy compound lifts, mostly 6-12 reps, and don't switch to high reps. When recovery drops, cut a few sets before cutting the weight. Diet more slowly rather than with a large deficit.",
+    "expected_video_retrieved": true,
+    "retrieved_video_ids": [
+      "EOh2R-89qqg",
+      "EOh2R-89qqg",
+      "EOh2R-89qqg",
+      "EOh2R-89qqg",
+      "EOh2R-89qqg",
+      "EOh2R-89qqg"
+    ],
+    "latency_seconds": 4.59
+  },
+  {
+    "id": "q13",
+    "question": "What is a good keto dinner recipe?",
+    "answer": "The videos don't cover it.",
+    "reference_answer": "The videos don't cover recipes. The bot should say it can't find this in the videos instead of inventing an answer.",
+    "expected_video_retrieved": null,
+    "retrieved_video_ids": [
+      "Pok0Jg2JAkE",
+      "U9ENCvFf9yQ",
+      "EOh2R-89qqg",
+      "U9ENCvFf9yQ",
+      "Pok0Jg2JAkE",
+      "Pok0Jg2JAkE"
+    ],
+    "latency_seconds": 1.06
+  }
+]
