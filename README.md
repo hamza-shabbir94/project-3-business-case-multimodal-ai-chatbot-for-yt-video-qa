@@ -141,6 +141,12 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 │   ├── openapi.json          # API contract, generated from app.py (Phase 5)
 │   ├── tests/test_api.py     # API tests: 13 free + 3 live (Phase 5)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
+├── frontend/                 # React + Vite chat app (Phase 6)
+│   ├── src/App.jsx           # layout, chat state, thread_id in localStorage, history reload
+│   ├── src/components/       # Message (markdown + citation links), Composer (text + mic), VideoList
+│   ├── src/citations.js      # [Title, m:ss] -> YouTube link at that second (+ citations.test.js)
+│   ├── src/api.js            # calls to /api/*
+│   └── src/useRecorder.js    # microphone recording (MediaRecorder)
 ├── scripts/                  # run locally, never on Vercel
 │   ├── check_setup.py        # checks keys + one traced LLM call (Phase 0)
 │   ├── ingest.py             # collects transcripts + metadata (Phase 1)
@@ -166,6 +172,9 @@ python3 -m venv .venv
 # 2. Keys: copy .env.example to .env and fill in your own values.
 #    The scripts also find a .env in a parent folder.
 cp .env.example .env
+
+# 3. Frontend (Node 20+)
+cd frontend && npm install
 ```
 
 Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, `LANGSMITH_PROJECT`, `PINECONE_API_KEY`. `DATABASE_URL` (Neon Postgres) stores chat memory; without it the agent uses in-RAM memory, which is fine locally but not on Vercel. Never commit `.env`.
@@ -195,6 +204,10 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 .venv/bin/pytest backend/tests -m "not live"        # free tests
 .venv/bin/pytest backend/tests                       # + live tests (OpenAI, Pinecone, Neon)
 
+# Phase 6: frontend (start the API first; Vite forwards /api to it)
+cd frontend && npm run dev                           # http://localhost:5173
+cd frontend && npm test                              # citation unit tests
+
 # Phase 4: chat with the agent
 .venv/bin/python scripts/chat.py --demo              # scripted test of all tools + memory
 .venv/bin/python scripts/chat.py                     # interactive chat
@@ -211,7 +224,7 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 | 3 | Baseline RAG chain | Done |
 | 4 | Agent with tools and memory | Done |
 | 5 | FastAPI backend | Done |
-| 6 | React + Vite frontend | Planned |
+| 6 | React + Vite frontend | Done |
 | 7 | Deploy on Vercel | Planned |
 | 8 | Evaluation, docs, slides | Planned |
 
@@ -348,6 +361,33 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - Follow-up "Is it safe for teenagers?" -> "the videos do not specifically address teenagers", plus what they say about general safety.
 - **Fix:** Whisper first heard "creatine" as "creating". A vocabulary `prompt` (creatine, hypertrophy, deadlift, ...) fixed it. Silence returns 422 instead of an empty question.
 
+### Phase 6: React + Vite Frontend
+`frontend/` is a single-page chat app (React 19, Vite 8, `react-markdown` for the answer formatting).
+
+- **Chat:** typed questions, 4 example questions on an empty chat, a typing indicator, Enter to send (Shift+Enter for a new line).
+- **Citations as links:** every `[Video title, m:ss]` in an answer becomes a small `▶ 3:17` button that opens YouTube at that second (the full title shows on hover). Below each answer, "Sources" lists the videos and times the agent retrieved.
+- **Voice:** the 🎤 button records with the browser's `MediaRecorder` (max 60 s) and sends the audio to `/api/transcribe`. The text goes into the text box, so the user can check it before sending.
+- **Memory:** the `thread_id` is kept in `localStorage`. On reload the app loads the conversation from `/api/history`. "New chat" starts a new thread.
+- **Video list:** all 18 videos with thumbnail, length and channel, plus a "Summarize" button that asks the agent for a summary of that video.
+- **Layout:** light and dark mode follow the system setting. On phones (under 760 px) the video list moves behind a "Videos" button.
+- **Dev setup:** Vite forwards `/api` to FastAPI on port 8000, so the browser sees one origin, as it will on Vercel.
+
+**Tests:**
+- `npm test`: 6 of 6 unit tests for the citation parser (times like `1:02:03`, titles with commas, two citations side by side, unknown titles left as text).
+- `npm run lint` clean, `npm run build` 107 kB gzipped JavaScript.
+- **End-to-end in headless Chrome** (Playwright, with a fake microphone playing a recorded question), all steps passed:
+
+| Step | Result |
+|---|---|
+| Page load | 18 videos and 4 example questions shown |
+| Click the protein example | answer with 10 citation links, all to `youtube.com/watch?v=...&t=Ns`, none left as plain text |
+| Type a follow-up | answered from memory ("that" = protein) |
+| Reload the page | both turns restored from Neon |
+| Record a voice question | text box shows "How many sets per week should I do to build muscle?" |
+| New chat | empty chat |
+| Phone width 390 px | no horizontal scroll; Videos button swaps the list and the chat |
+| Browser console | no errors |
+
 ## Known Issues and Limitations
 
 - **YouTube rate limits:** after many fast requests, YouTube blocks the captions endpoint (`IpBlocked`). `ingest.py` then falls back to Whisper. Cloud servers like Vercel are blocked even more often, so ingestion runs locally.
@@ -357,6 +397,7 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **Chunk boundaries:** a number and its context can land in different chunks. Example: the agent gives "120-165 g of protein" without "for a 75 kg person", because the "1.6-2.2 g/kg" sentence is in the previous chunk.
 - **Agent latency:** 2-16 s per answer (the agent needs one LLM call to pick a tool and one to answer; `summarize_video` adds a third). The plain RAG chain takes about 2.5 s.
 - **Tool choice is not always ideal:** for "Summarize the creatine video" the agent sometimes uses `search_videos` instead of `summarize_video`. The answer is still correct, but it may be less complete.
+- **Calculated numbers:** the agent sometimes works out its own example from a video's range ("for 180 lbs, about 145-218 g"). The math is close, but the number is not said in any video. To be measured in the Phase 8 evaluation.
 - **Growing history:** every message of a thread is sent to the model again. Fine for a demo; long threads would need trimming or summarizing old messages.
 - **`av` version pin:** `av` 16+ breaks `faster-whisper` 1.2.x, so `scripts/requirements.txt` pins `av<16`.
 
