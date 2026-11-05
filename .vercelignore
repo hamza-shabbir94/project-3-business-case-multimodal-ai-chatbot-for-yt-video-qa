@@ -1,0 +1,17 @@
+# Never upload secrets
+.env
+.env.*
+!.env.example
+*.key
+secrets/
+
+# Local-only: virtualenvs, builds, ingestion and evaluation tools
+.venv/
+**/node_modules/
+frontend/dist/
+**/__pycache__/
+scripts/
+eval/
+_study_notes/
+.claude/
+skills-lock.json

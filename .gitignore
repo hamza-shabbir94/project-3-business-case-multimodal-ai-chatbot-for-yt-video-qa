@@ -17,3 +17,8 @@ scripts/.audio_tmp/
 
 # OS
 .DS_Store
+
+# Vercel CLI project link
+.vercel/
+.vercel
+.env*

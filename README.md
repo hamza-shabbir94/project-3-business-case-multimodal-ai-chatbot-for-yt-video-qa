@@ -158,6 +158,8 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 ├── eval/
 │   ├── qa_dataset.csv        # 13 test questions with reference answers (Phase 3)
 │   └── results/              # saved answers of each test run, for comparison
+├── vercel.json               # Vercel Services: /api/* -> FastAPI, everything else -> React (Phase 7)
+├── .vercelignore             # keeps .env, .venv, node_modules, scripts/, eval/ out of the upload
 ├── .env.example              # placeholder keys
 └── README.md
 ```
@@ -225,7 +227,7 @@ cd frontend && npm test                              # citation unit tests
 | 4 | Agent with tools and memory | Done |
 | 5 | FastAPI backend | Done |
 | 6 | React + Vite frontend | Done |
-| 7 | Deploy on Vercel | Planned |
+| 7 | Deploy on Vercel | In progress: config tested locally, keys and live test pending |
 | 8 | Evaluation, docs, slides | Planned |
 
 ## Phase Details
@@ -388,6 +390,22 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 | Phone width 390 px | no horizontal scroll; Videos button swaps the list and the chat |
 | Browser console | no errors |
 
+### Phase 7: Deploy on Vercel
+One Vercel project, `fitness-video-qa`, with two [Vercel Services](https://vercel.com/docs/services) on one domain:
+
+```
+https://<project>.vercel.app/api/*  ->  backend  (FastAPI, Python 3.13, one Vercel Function, maxDuration 60 s)
+https://<project>.vercel.app/*      ->  frontend (Vite build, served from the CDN)
+```
+
+- The backend receives the full path (`/api/chat`), so the FastAPI routes are unchanged. Same domain, so no CORS.
+- `backend/requirements.txt` pins the versions tested locally; `backend/.python-version` sets Python 3.13.
+- A clean install of the backend is 172 MB (Vercel's Python limit is 500 MB). Tests, `pytest.ini` and `openapi.json` are excluded from the function.
+- The GitHub repo is connected: a push to `main` deploys production, other branches get preview URLs.
+- **Keys** are set in Vercel (Settings -> Environment Variables), never uploaded: `OPENAI_API_KEY`, `PINECONE_API_KEY`, `DATABASE_URL`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING`, `LANGSMITH_PROJECT`.
+
+**Local test of the deploy config:** `vercel dev -L` runs both services like Vercel does. The headless Chrome end-to-end test (8 steps: videos, answer with 10 citation links, follow-up from memory, reload from Neon, voice question, new chat, phone layout, no console errors) passed through it.
+
 ## Known Issues and Limitations
 
 - **YouTube rate limits:** after many fast requests, YouTube blocks the captions endpoint (`IpBlocked`). `ingest.py` then falls back to Whisper. Cloud servers like Vercel are blocked even more often, so ingestion runs locally.
@@ -398,6 +416,7 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **Agent latency:** 2-16 s per answer (the agent needs one LLM call to pick a tool and one to answer; `summarize_video` adds a third). The plain RAG chain takes about 2.5 s.
 - **Tool choice is not always ideal:** for "Summarize the creatine video" the agent sometimes uses `search_videos` instead of `summarize_video`. The answer is still correct, but it may be less complete.
 - **Calculated numbers:** the agent sometimes works out its own example from a video's range ("for 180 lbs, about 145-218 g"). The math is close, but the number is not said in any video. To be measured in the Phase 8 evaluation.
+- **Public API with no login:** anyone with the URL can ask questions, which costs OpenAI credits. Set a monthly spending limit in the OpenAI dashboard; rate limiting would be the next step.
 - **Growing history:** every message of a thread is sent to the model again. Fine for a demo; long threads would need trimming or summarizing old messages.
 - **`av` version pin:** `av` 16+ breaks `faster-whisper` 1.2.x, so `scripts/requirements.txt` pins `av<16`.
 

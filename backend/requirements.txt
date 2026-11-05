@@ -1,12 +1,15 @@
 # Backend: API clients only (deployed on Vercel). No torch / transformers here.
-langchain
-langchain-openai
-langsmith
-python-dotenv
-langchain-pinecone
-pinecone
-langgraph
-langgraph-checkpoint-postgres
-psycopg[binary,pool]
-fastapi
-python-multipart
+# Pinned to the versions tested locally, so Vercel builds the same thing.
+fastapi==0.162.0
+python-multipart==0.0.33
+langchain==1.4.8
+langchain-openai==1.7.3
+langsmith==0.14.17
+langgraph==1.2.19
+langgraph-checkpoint-postgres==3.2.0
+langchain-pinecone==0.2.13
+pinecone==7.3.0
+openai==3.45.0
+psycopg[binary,pool]==3.3.8
+psycopg-pool==3.3.3
+python-dotenv==1.2.4
