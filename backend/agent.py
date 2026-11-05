@@ -1,0 +1,180 @@
+"""Phase 4: LangGraph agent with tools and memory.
+
+    user message + thread_id
+        -> agent (gpt-4o-mini) decides which tool(s) to call
+             search_videos   : top-k transcript chunks from Pinecone (optionally one video)
+             list_videos     : the videos in the knowledge base
+             video_info      : title, channel, length, upload date, link of one video
+             summarize_video : summary of one whole video, with timestamps
+        -> answer with [Video title, m:ss] citations
+
+Memory: every message of a thread is saved by a LangGraph checkpointer under its
+thread_id. With DATABASE_URL set it is Neon Postgres (survives restarts and works on
+serverless Vercel). Without it, an in-RAM MemorySaver is used (local tests only).
+
+The caller must load the environment variables first.
+"""
+import os
+import re
+
+from langchain.agents import create_agent
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+
+from catalog import find_video, load_videos, transcript_with_timestamps, video_summary_line
+from rag import DEFAULT_K, LLM_MODEL, format_docs, get_sources
+from vectorstore import get_vectorstore
+
+SYSTEM_PROMPT = """You are a fitness assistant for a collection of YouTube videos about muscle growth, training, exercise technique, nutrition, fat loss and recovery.
+
+Tools:
+- search_videos: use it for any question about the video content. Search again with other words if the first results don't answer the question. Pass video_id to search inside one video.
+- list_videos: use it when the user asks which videos or topics you know.
+- video_info: details about one video (channel, length, upload date, link).
+- summarize_video: when the user asks for a summary, the main points, or all the steps of a routine from one video. It reads the whole transcript, so nothing is missed.
+
+Rules:
+- Answer ONLY from tool results. If they do not contain the answer, say that the videos don't cover it. Do not use outside knowledge.
+- After each fact, copy the citation tag from the tool result exactly, for example [How Sleep Powers Muscle Growth, 7:20]. Every citation has the full video title and the time, even when all facts come from one video. Never write only [7:20].
+- Keep the context of every number: units, body weight, and whether it is for bulking, cutting or general health. Prefer per-kilogram ranges over single examples, and say who an example applies to.
+- If the question asks how to do something, give all the steps or parts the results mention.
+- When several videos answer the question, combine them and say where they agree or differ.
+- The transcripts are auto-generated and can contain errors, especially in numbers. If a number looks wrong, say so.
+- Use the conversation history for follow-up questions like "and for women?" or "summarize that video".
+- When asked about earlier questions, look at the previous user messages above. Only if there are none, say this is the start of the conversation. Never invent earlier questions.
+- When listing videos, give only the title and channel, one line each.
+- Be concise: a few sentences or a short list."""
+
+SUMMARY_PROMPT = """Summarize this YouTube video transcript in 5-8 bullet points.
+If the video teaches a routine or steps, list every step instead, with all its numbers (sets, reps, percentages, rest times).
+After each bullet, cite the time it comes from as [{title}, m:ss], using the [m:ss] markers in the transcript.
+Keep numbers with their units. The transcript is auto-generated, so ignore obvious caption errors.
+{focus}
+Title: {title}
+Channel: {channel}
+
+Transcript:
+{transcript}"""
+
+BARE_TIME = re.compile(r"\[(\d{1,2}:\d{2}(?::\d{2})?)\]")  # [1:00] or [1:02:03], without a title
+
+NOT_FOUND = "No video matches '{query}'. Call list_videos to see the available titles and IDs."
+
+
+@tool(response_format="content_and_artifact")
+def search_videos(query: str, video_id: str | None = None) -> tuple[str, list[dict]]:
+    """Search the video transcripts for passages that answer a question.
+
+    Args:
+        query: what to look for, e.g. "how much protein per day to build muscle".
+        video_id: optional, only search inside this one video.
+    """
+    search_filter = {"video_id": video_id} if video_id else None
+    docs = get_vectorstore().similarity_search(query, k=DEFAULT_K, filter=search_filter)
+    if not docs:
+        return "No matching passages found.", []
+    return format_docs(docs), get_sources(docs)
+
+
+@tool
+def list_videos() -> str:
+    """List every video in the knowledge base with its channel, length and ID."""
+    videos = load_videos().values()
+    return f"{len(videos)} videos:\n" + "\n".join(video_summary_line(v) for v in videos)
+
+
+@tool
+def video_info(video: str) -> str:
+    """Details of one video: title, channel, length, upload date, transcript source and link.
+
+    Args:
+        video: the video ID or (part of) its title.
+    """
+    record = find_video(video)
+    if record is None:
+        return NOT_FOUND.format(query=video)
+    d = record["upload_date"]
+    return (f"Title: {record['title']}\nChannel: {record['channel']}\n"
+            f"Length: {round(record['duration_seconds'] / 60)} min\nUploaded: {d[:4]}-{d[4:6]}-{d[6:]}\n"
+            f"Transcript: {record['source']}\nLink: {record['url']}\nID: {record['video_id']}")
+
+
+@tool(response_format="content_and_artifact")
+def summarize_video(video: str, focus: str | None = None) -> tuple[str, list[dict]]:
+    """Summarize one whole video with timestamps, or list every step of a routine it teaches.
+
+    Args:
+        video: the video ID or (part of) its title.
+        focus: optional topic to focus on, e.g. "nutrition advice" or "all warm-up steps".
+    """
+    record = find_video(video)
+    if record is None:
+        return NOT_FOUND.format(query=video), []
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=900)
+    prompt = SUMMARY_PROMPT.format(
+        title=record["title"], channel=record["channel"],
+        focus=f"Focus on: {focus}\n" if focus else "",
+        transcript=transcript_with_timestamps(record),
+    )
+    summary = llm.invoke(prompt).content
+
+    # The model copies the bare [m:ss] markers of the transcript. Turn them into full
+    # citation tags in code (prompting alone did not work) and return them as sources.
+    summary = BARE_TIME.sub(lambda m: f"[{record['title']}, {m.group(1)}]", summary)
+    sources = []
+    for ts in dict.fromkeys(re.findall(r", (\d{1,2}:\d{2}(?::\d{2})?)\]", summary)):
+        seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(ts.split(":"))))
+        sources.append({"title": record["title"], "channel": record["channel"],
+                        "timestamp": ts, "url": f"{record['url']}&t={seconds}s"})
+    return summary, sources
+
+
+TOOLS = [search_videos, list_videos, video_info, summarize_video]
+
+
+def get_checkpointer():
+    """Neon Postgres when DATABASE_URL is set, otherwise in-RAM memory (lost on restart)."""
+    url = os.getenv("DATABASE_URL", "")
+    if not url or url.startswith("your-"):
+        return MemorySaver()
+    from langgraph.checkpoint.postgres import PostgresSaver
+    from psycopg_pool import ConnectionPool
+
+    # prepare_threshold=0: needed for Neon's pooled (pgbouncer) connection string
+    pool = ConnectionPool(url, max_size=5, kwargs={"autocommit": True, "prepare_threshold": 0}, open=True)
+    checkpointer = PostgresSaver(pool)
+    checkpointer.setup()  # creates the checkpoint tables once; safe to call again
+    return checkpointer
+
+
+def build_agent(checkpointer=None):
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=1000)
+    return create_agent(
+        llm, TOOLS, system_prompt=SYSTEM_PROMPT,
+        checkpointer=checkpointer if checkpointer is not None else get_checkpointer(),
+        name="fitness_video_agent",
+    )
+
+
+def ask(agent, question: str, thread_id: str) -> dict:
+    """Send one user message. Returns {answer, sources, tools_used} for this turn only."""
+    config = {"configurable": {"thread_id": thread_id}}
+    result = agent.invoke({"messages": [HumanMessage(question)]}, config)
+
+    # messages after the last human message belong to this turn
+    messages = result["messages"]
+    last_human = max(i for i, m in enumerate(messages) if isinstance(m, HumanMessage))
+    turn = messages[last_human + 1:]
+
+    sources, seen, tools_used = [], set(), []
+    for m in turn:
+        if isinstance(m, AIMessage):
+            tools_used += [c["name"] for c in m.tool_calls]
+        if isinstance(m, ToolMessage) and m.artifact:
+            for s in m.artifact:
+                if s["url"] not in seen:
+                    seen.add(s["url"])
+                    sources.append(s)
+    return {"answer": messages[-1].content, "sources": sources, "tools_used": tools_used}

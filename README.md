@@ -134,13 +134,21 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 ├── backend/
 │   ├── data/                 # 18 transcripts as JSON (Phase 1)
 │   ├── vectorstore.py        # Pinecone index + OpenAI embeddings, shared (Phase 2)
+│   ├── rag.py                # baseline RAG chain: retriever -> prompt -> gpt-4o-mini (Phase 3)
+│   ├── catalog.py            # reads full transcripts for list / info / summarize (Phase 4)
+│   ├── agent.py              # LangGraph agent: 4 tools + memory per thread_id (Phase 4)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
 ├── scripts/                  # run locally, never on Vercel
 │   ├── check_setup.py        # checks keys + one traced LLM call (Phase 0)
 │   ├── ingest.py             # collects transcripts + metadata (Phase 1)
 │   ├── index_videos.py       # cleans, chunks, embeds, uploads to Pinecone (Phase 2)
+│   ├── test_rag.py           # runs the test set: retrieval hit@k + answers (Phase 3)
+│   ├── chat.py               # chat with the agent in the terminal, or run the demo (Phase 4)
 │   ├── videos.txt            # the YouTube links we use
 │   └── requirements.txt      # local tools: yt-dlp, faster-whisper, ...
+├── eval/
+│   ├── qa_dataset.csv        # 13 test questions with reference answers (Phase 3)
+│   └── results/              # saved answers of each test run, for comparison
 ├── .env.example              # placeholder keys
 └── README.md
 ```
@@ -157,7 +165,7 @@ python3 -m venv .venv
 cp .env.example .env
 ```
 
-Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, `LANGSMITH_PROJECT`, `PINECONE_API_KEY`. `DATABASE_URL` (Neon) is needed from Phase 4. Never commit `.env`.
+Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, `LANGSMITH_PROJECT`, `PINECONE_API_KEY`. `DATABASE_URL` (Neon Postgres) stores chat memory; without it the agent uses in-RAM memory, which is fine locally but not on Vercel. Never commit `.env`.
 
 ## How to Run
 
@@ -173,6 +181,16 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 .venv/bin/python scripts/index_videos.py --dry-run  # show chunks only, no API calls
 .venv/bin/python scripts/index_videos.py            # skips videos already indexed
 .venv/bin/python scripts/index_videos.py --reindex  # replace all chunks
+
+# Phase 3: test the RAG chain
+.venv/bin/python scripts/test_rag.py --retrieval              # hit@k for k=1..8, no LLM calls
+.venv/bin/python scripts/test_rag.py --label phase3_v2         # answer all test questions, save results
+.venv/bin/python scripts/test_rag.py --question "Is creatine safe?"
+
+# Phase 4: chat with the agent
+.venv/bin/python scripts/chat.py --demo              # scripted test of all tools + memory
+.venv/bin/python scripts/chat.py                     # interactive chat
+.venv/bin/python scripts/chat.py --thread my-test    # continue a thread (needs DATABASE_URL)
 ```
 
 ## Progress
@@ -182,8 +200,8 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 | 0 | Setup, keys, LangSmith tracing | Done |
 | 1 | Data collection (transcripts + metadata) | Done |
 | 2 | Chunk, embed, store in Pinecone | Done |
-| 3 | Baseline RAG chain | In progress |
-| 4 | Agent with tools and memory | Planned |
+| 3 | Baseline RAG chain | Done |
+| 4 | Agent with tools and memory | Done |
 | 5 | FastAPI backend | Planned |
 | 6 | React + Vite frontend | Planned |
 | 7 | Deploy on Vercel | Planned |
@@ -226,10 +244,88 @@ For each link in `scripts/videos.txt`, `scripts/ingest.py`:
 | how do I avoid losing muscle while dieting | Jeff Nippard, dieting video `[0:31]` |
 | what is progressive overload | PictureFit `[0:00]` |
 
+### Phase 3: Baseline RAG Chain
+`backend/rag.py` builds an LCEL chain with no agent yet:
+
+```
+question -> Pinecone retriever (top-k chunks) -> prompt with excerpts -> gpt-4o-mini -> answer + sources
+```
+
+- **Prompt rules:** answer only from the excerpts; say "the videos don't cover it" otherwise; cite every fact as `[Video title, m:ss]`; keep the context of numbers (units, body weight, bulking or cutting); give every step for how-to questions; flag numbers that look wrong.
+- Each excerpt is shown to the model with the exact citation tag to copy, so citations have one format the frontend can turn into links.
+- The chain returns the retrieved documents too, so sources can be shown as links that open the video at that second.
+- `temperature=0`, `max_tokens=400`. Every run is traced in LangSmith (run name `baseline_rag`).
+
+**Test set:** `eval/qa_dataset.csv` has 13 questions written from the transcripts, each with the expected video(s) and a reference answer. It covers protein, creatine, squat depth, training volume, progressive overload, fat loss, sleep, push pull legs, warm-up and dieting, plus one caption-error question (q03) and one out-of-scope question (q13).
+
+**Retrieval (hit@k, 12 in-scope questions):** hit@1 = 92%, hit@2 to hit@8 = 100%.
+
+**Tuning:** two runs on the same questions, saved in `eval/results/`.
+
+| | v1: k=4, first prompt | v2: k=6, improved prompt |
+|---|---|---|
+| Citation format `[Title, m:ss]` | mixed (`[1, 2]`, `[1, 3:27]`) | 13/13 correct |
+| Protein (q01) | numbers without context | 1.6-2.2 g/kg, with the 75 kg example |
+| Cardio vs weights (q08) | missed the conclusion | "combine both" included |
+| Sleep (q09) | missed consistency | consistency included |
+| Warm-up (q11) | no structure | 4 warm-up sets with percentages and rest times |
+| Dieting (q12) | missed "maintain strength" | 4 strategies including strength |
+| Caption error (q03) | correct (~64 g) | correct (~64 g) |
+| Out of scope (q13) | refused | refused |
+| Median / max latency | 2.0 s / 3.7 s | 2.5 s / 5.2 s |
+
+**Chosen setting:** k=6 with the improved prompt. All numbers in the answers were checked against the transcripts, and none were invented.
+
+### Phase 4: Agent with Tools and Memory
+`backend/agent.py` builds a LangGraph agent with LangChain's `create_agent` (the teacher's notebooks use the older `initialize_agent`, which langchain 1.x removed).
+
+```
+user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with [Title, m:ss] citations
+                               ^                                      |
+                               └──── memory: all messages of the thread (checkpointer)
+```
+
+| Tool | What it does | Data |
+|---|---|---|
+| `search_videos(query, video_id?)` | top-6 chunks; with `video_id` only inside one video | Pinecone |
+| `list_videos()` | all 18 videos with channel, length, ID | `backend/data/*.json` |
+| `video_info(video)` | channel, length, upload date, link; finds a video by ID or part of its title | `backend/data/*.json` |
+| `summarize_video(video, focus?)` | summary of the whole video, or every step of a routine, with timestamps | full transcript + one extra LLM call |
+
+- **Sources:** `search_videos` and `summarize_video` also return their sources (title, timestamp, link with `&t=Ns`) next to the text. `ask()` collects them per turn for the frontend.
+- **Memory:** a LangGraph checkpointer saves every message under its `thread_id`. With `DATABASE_URL` set it uses `PostgresSaver` on Neon (survives restarts and works on serverless Vercel); otherwise `MemorySaver` (in RAM, local tests only).
+- **Citation fix:** the summary LLM copied the bare `[1:00]` markers from the transcript, and the agent then dropped titles in the rest of the thread. Prompt rules did not fix this, so `summarize_video` now rewrites `[1:00]` to `[Title, 1:00]` with a regex.
+
+**Demo (`scripts/chat.py --demo`), one thread, 7 turns:**
+
+| Turn | Tests | Tools used | Result |
+|---|---|---|---|
+| Which videos do you have? | `list_videos` | list_videos | all 18 listed |
+| How much protein per day to build muscle? | `search_videos` | search_videos | bulking, cutting, high body fat and minimum figures, cited |
+| And how much of that in one meal? | memory follow-up | search_videos | understood "that" = protein; 20-25 g vs 40-70 g studies |
+| Who made the Institute of Human Anatomy protein video, how long? | `video_info` | video_info | 16 min, uploaded 2023-06-18 |
+| Summarize that video. | `summarize_video` + memory | summarize_video | found "that video" from the last turn; 7 bullets with times |
+| Give me a keto pancake recipe. | out of scope | none | "The videos do not cover keto pancake recipes." |
+| What was my first question about nutrition? | memory recall | none | repeated the protein question |
+
+**Memory on Neon Postgres (project in AWS us-east-2, pooled connection):**
+- `PostgresSaver.setup()` created the tables `checkpoints`, `checkpoint_blobs`, `checkpoint_writes`, `checkpoint_migrations`.
+- Restart test: process 1 asked "How deep should I squat?". A **new process** with the same `thread_id` answered "You asked how deep you should squat." A new `thread_id` answered "This is the start of the conversation."
+- The 7-turn demo also passes with `PostgresSaver`.
+- **Fix:** on an empty thread the agent first invented an earlier question. A prompt rule fixed it, and its first wording broke the opposite case (a thread with history also said "start of the conversation"), so both cases are tested.
+
+**Compared with Phase 3:** the warm-up question now has every part (5 min cycling, dynamic stretches, foam rolling, and all 4 warm-up sets with 50/70/90% and rest times), because the agent calls `summarize_video`. Numbers were checked against the transcripts.
+
 ## Known Issues and Limitations
 
 - **YouTube rate limits:** after many fast requests, YouTube blocks the captions endpoint (`IpBlocked`). `ingest.py` then falls back to Whisper. Cloud servers like Vercel are blocked even more often, so ingestion runs locally.
 - **Auto-caption errors:** auto captions can contain wrong numbers. Example: one chunk says "about 655 g of protein per day" for an 80 kg person, where 0.8 g/kg gives about 64 g. The LLM may repeat such errors, so the test set includes questions like this.
+- **Extra citations:** the model sometimes adds a citation to a chunk that is only loosely related (for example a progressive overload video cited in the sets-per-week answer).
+- **Long how-to answers:** the Phase 3 chain misses parts of routines spread across a whole video (the warm-up answer misses the 5-minute cycling step). Fixed in Phase 4: the agent calls `summarize_video`, which reads the whole transcript.
+- **Chunk boundaries:** a number and its context can land in different chunks. Example: the agent gives "120-165 g of protein" without "for a 75 kg person", because the "1.6-2.2 g/kg" sentence is in the previous chunk.
+- **Agent latency:** 2-16 s per answer (the agent needs one LLM call to pick a tool and one to answer; `summarize_video` adds a third). The plain RAG chain takes about 2.5 s.
+- **Tool choice is not always ideal:** for "Summarize the creatine video" the agent sometimes uses `search_videos` instead of `summarize_video`. The answer is still correct, but it may be less complete.
+- **Growing history:** every message of a thread is sent to the model again. Fine for a demo; long threads would need trimming or summarizing old messages.
 - **`av` version pin:** `av` 16+ breaks `faster-whisper` 1.2.x, so `scripts/requirements.txt` pins `av<16`.
 
 ## Design Decisions: README Points We Interpret Differently

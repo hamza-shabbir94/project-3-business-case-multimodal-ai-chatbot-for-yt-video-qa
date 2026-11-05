@@ -5,3 +5,6 @@ langsmith
 python-dotenv
 langchain-pinecone
 pinecone
+langgraph
+langgraph-checkpoint-postgres
+psycopg[binary,pool]
