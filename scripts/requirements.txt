@@ -4,3 +4,8 @@ youtube-transcript-api
 yt-dlp
 faster-whisper
 av<16  # av 16+ breaks faster-whisper 1.2.x
+
+# Phase 5: local server and tests
+uvicorn
+pytest
+httpx

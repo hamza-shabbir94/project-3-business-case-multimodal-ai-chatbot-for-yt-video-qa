@@ -158,16 +158,8 @@ def build_agent(checkpointer=None):
     )
 
 
-def ask(agent, question: str, thread_id: str) -> dict:
-    """Send one user message. Returns {answer, sources, tools_used} for this turn only."""
-    config = {"configurable": {"thread_id": thread_id}}
-    result = agent.invoke({"messages": [HumanMessage(question)]}, config)
-
-    # messages after the last human message belong to this turn
-    messages = result["messages"]
-    last_human = max(i for i, m in enumerate(messages) if isinstance(m, HumanMessage))
-    turn = messages[last_human + 1:]
-
+def _summarize_turn(turn: list) -> dict:
+    """The messages after one user message -> {answer, sources, tools_used}."""
     sources, seen, tools_used = [], set(), []
     for m in turn:
         if isinstance(m, AIMessage):
@@ -177,4 +169,25 @@ def ask(agent, question: str, thread_id: str) -> dict:
                 if s["url"] not in seen:
                     seen.add(s["url"])
                     sources.append(s)
-    return {"answer": messages[-1].content, "sources": sources, "tools_used": tools_used}
+    answer = turn[-1].content if turn and isinstance(turn[-1], AIMessage) else ""
+    return {"answer": answer, "sources": sources, "tools_used": tools_used}
+
+
+def ask(agent, question: str, thread_id: str) -> dict:
+    """Send one user message. Returns {answer, sources, tools_used} for this turn only."""
+    config = {"configurable": {"thread_id": thread_id}}
+    messages = agent.invoke({"messages": [HumanMessage(question)]}, config)["messages"]
+    last_human = max(i for i, m in enumerate(messages) if isinstance(m, HumanMessage))
+    return _summarize_turn(messages[last_human + 1:])
+
+
+def get_history(agent, thread_id: str) -> list[dict]:
+    """All turns of a saved thread: [{question, answer, sources, tools_used}], oldest first."""
+    state = agent.get_state({"configurable": {"thread_id": thread_id}})
+    messages = state.values.get("messages", []) if state and state.values else []
+    starts = [i for i, m in enumerate(messages) if isinstance(m, HumanMessage)]
+    turns = []
+    for n, i in enumerate(starts):
+        end = starts[n + 1] if n + 1 < len(starts) else len(messages)
+        turns.append({"question": messages[i].content, **_summarize_turn(messages[i + 1:end])})
+    return turns

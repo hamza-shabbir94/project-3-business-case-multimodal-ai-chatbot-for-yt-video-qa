@@ -137,6 +137,9 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 │   ├── rag.py                # baseline RAG chain: retriever -> prompt -> gpt-4o-mini (Phase 3)
 │   ├── catalog.py            # reads full transcripts for list / info / summarize (Phase 4)
 │   ├── agent.py              # LangGraph agent: 4 tools + memory per thread_id (Phase 4)
+│   ├── app.py                # FastAPI: /api/chat, /api/transcribe, /api/history, /api/videos (Phase 5)
+│   ├── openapi.json          # API contract, generated from app.py (Phase 5)
+│   ├── tests/test_api.py     # API tests: 13 free + 3 live (Phase 5)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
 ├── scripts/                  # run locally, never on Vercel
 │   ├── check_setup.py        # checks keys + one traced LLM call (Phase 0)
@@ -187,6 +190,11 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 .venv/bin/python scripts/test_rag.py --label phase3_v2         # answer all test questions, save results
 .venv/bin/python scripts/test_rag.py --question "Is creatine safe?"
 
+# Phase 5: run the API (docs at http://127.0.0.1:8000/docs)
+.venv/bin/uvicorn app:app --app-dir backend --reload
+.venv/bin/pytest backend/tests -m "not live"        # free tests
+.venv/bin/pytest backend/tests                       # + live tests (OpenAI, Pinecone, Neon)
+
 # Phase 4: chat with the agent
 .venv/bin/python scripts/chat.py --demo              # scripted test of all tools + memory
 .venv/bin/python scripts/chat.py                     # interactive chat
@@ -202,7 +210,7 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 | 2 | Chunk, embed, store in Pinecone | Done |
 | 3 | Baseline RAG chain | Done |
 | 4 | Agent with tools and memory | Done |
-| 5 | FastAPI backend | Planned |
+| 5 | FastAPI backend | Done |
 | 6 | React + Vite frontend | Planned |
 | 7 | Deploy on Vercel | Planned |
 | 8 | Evaluation, docs, slides | Planned |
@@ -315,6 +323,30 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **Fix:** on an empty thread the agent first invented an earlier question. A prompt rule fixed it, and its first wording broke the opposite case (a thread with history also said "start of the conversation"), so both cases are tested.
 
 **Compared with Phase 3:** the warm-up question now has every part (5 min cycling, dynamic stretches, foam rolling, and all 4 warm-up sets with 50/70/90% and rest times), because the agent calls `summarize_video`. Numbers were checked against the transcripts.
+
+### Phase 5: FastAPI Backend
+`backend/app.py` puts the agent behind an HTTP API. The Pydantic models are the contract; `backend/openapi.json` is generated from them, and `/docs` shows it interactively.
+
+| Endpoint | Request | Response |
+|---|---|---|
+| `GET /api/health` | - | `{status: "ok"}` |
+| `GET /api/videos` | - | 18 videos: id, title, channel, duration, url, thumbnail |
+| `POST /api/chat` | `{message, thread_id?}` | `{answer, sources[], tools_used[], thread_id}`; no `thread_id` starts a new conversation |
+| `GET /api/history/{thread_id}` | - | all turns of a thread from Neon, so the frontend can reload a chat |
+| `POST /api/transcribe` | audio file (multipart, max 4 MB) | `{text}` from the OpenAI Whisper API (`whisper-1`) |
+
+- **Voice flow:** the browser records audio -> `/api/transcribe` -> the text goes into `/api/chat` like a typed question. Voice is a separate endpoint so the user can check the text before sending it.
+- **Validation:** message 1-2000 characters, `thread_id` only letters, digits, `-`, `_` (max 64). Audio: only `audio/*` or `video/webm`, max 4 MB, because Vercel rejects request bodies over 4.5 MB.
+- **Errors:** 422 bad input, 413 audio too large, 415 not audio, 502 when OpenAI, Pinecone or Neon fail. Details go to the server log, never to the user.
+- **CORS:** allows the Vite dev server (`http://localhost:5173`); change with `CORS_ORIGINS`. On Vercel frontend and API share one domain.
+- Endpoints are plain `def`, so FastAPI runs the blocking LangChain calls in a thread pool. The agent and the Neon connection pool are created on the first request and reused.
+
+**Tests (`backend/tests/test_api.py`):** 16 of 16 pass. 13 free tests (validation, file type and size, CORS, static endpoints) and 3 live tests (squat answer with citation and timestamp link, follow-up from memory, history, new thread, out-of-scope, unknown thread).
+
+**Manual test with `curl` and a voice question made with macOS `say`:**
+- "How much creatine should I take per day?" -> transcribed -> answer "5 grams" cited to the beginner gym guide at 10:05. Checked: the creatine video gives no dose; the guide says "five grams every day".
+- Follow-up "Is it safe for teenagers?" -> "the videos do not specifically address teenagers", plus what they say about general safety.
+- **Fix:** Whisper first heard "creatine" as "creating". A vocabulary `prompt` (creatine, hypertrophy, deadlift, ...) fixed it. Silence returns 422 instead of an empty question.
 
 ## Known Issues and Limitations
 
