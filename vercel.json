@@ -3,7 +3,17 @@
   "services": {
     "frontend": {
       "root": "frontend/",
-      "framework": "vite"
+      "framework": "vite",
+      "routes": [
+        {
+          "handle": "filesystem"
+        },
+        {
+          "src": "/(.*)",
+          "dest": "/404.html",
+          "status": 404
+        }
+      ]
     },
     "backend": {
       "root": "backend/",
