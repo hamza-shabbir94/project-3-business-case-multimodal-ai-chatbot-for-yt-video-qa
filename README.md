@@ -232,7 +232,7 @@ cd frontend && npm test                              # citation unit tests
 | 4 | Agent with tools and memory | Done |
 | 5 | FastAPI backend | Done |
 | 6 | React + Vite frontend | Done |
-| 7 | Deploy on Vercel | In progress: config tested locally, keys and live test pending |
+| 7 | Deploy on Vercel | Done: live at https://fitness-video-qa.vercel.app |
 | 8 | Evaluation, docs, slides | Planned |
 
 ## Phase Details
@@ -421,6 +421,8 @@ https://<project>.vercel.app/*      ->  frontend (Vite build, served from the CD
 - **Keys** are set in Vercel (Settings -> Environment Variables), never uploaded: `OPENAI_API_KEY`, `PINECONE_API_KEY`, `DATABASE_URL`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING`, `LANGSMITH_PROJECT`.
 
 **Local test of the deploy config:** `vercel dev -L` runs both services like Vercel does. The headless Chrome end-to-end test (8 steps: videos, answer with 10 citation links, follow-up from memory, reload from Neon, voice question, new chat, phone layout, no console errors) passed through it.
+
+**Live test (production, headless Chrome):** all 8 chat steps pass on https://fitness-video-qa.vercel.app (answer with 10 citation links, follow-up from memory, reload from Neon, voice question, new chat, phone layout, no console errors). The landing page checks pass in light and dark at 1440 px and 390 px. Unknown paths return the branded 404 page with status 404 (a service-level route in `vercel.json`).
 
 ## Known Issues and Limitations
 
