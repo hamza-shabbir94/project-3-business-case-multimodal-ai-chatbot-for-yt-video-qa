@@ -1,5 +1,6 @@
 import { Barbell } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
+import { BRAND } from '../content/brand'
 import './site.css'
 
 const NAV_LINKS = [
@@ -13,7 +14,7 @@ export function Brand() {
   return (
     <a href="/" className="brand title-3">
       <span className="brand-mark" aria-hidden><Barbell size={16} weight="bold" /></span>
-      Fitness Video QA
+      {BRAND}
     </a>
   )
 }

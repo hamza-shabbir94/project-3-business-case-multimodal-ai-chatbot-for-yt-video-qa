@@ -18,9 +18,17 @@ const CHAT_URL = '/chat/'
 // "The Smartest Way To Use Protein To Build Muscle" (Jeff Nippard), Pok0Jg2JAkE.
 const PROTEIN_VIDEO = 'https://www.youtube.com/watch?v=Pok0Jg2JAkE'
 
-function Cta() {
+// Real lengths (seconds) of the 18 videos, from backend/data, grouped by topic (README table)
+const TRAINING = [1315, 260, 1069, 323, 661, 620, 734, 435, 483, 484, 458]
+const NUTRITION_RECOVERY = [620, 932, 357, 402, 506, 434, 654]
+const LONGEST = Math.max(...TRAINING, ...NUTRITION_RECOVERY)
+
+// Retrieval test (README, Phase 3): right video first for 11 of 12 questions
+const HIT_AT_1 = 11 / 12
+
+function Cta({ className = '' }) {
   return (
-    <a href={CHAT_URL} className="btn btn-primary button-md">
+    <a href={CHAT_URL} className={`btn btn-primary button-md ${className}`}>
       {CTA_LABEL} <ArrowRight size={16} weight="bold" className="arrow" aria-hidden />
     </a>
   )
@@ -35,60 +43,113 @@ function Cite({ seconds, label }) {
   )
 }
 
-function HeroVisual() {
+/* ---------- hero: full screen photo with two data cards ---------- */
+
+function LibraryCard() {
+  const bars = [
+    ...TRAINING.map((s) => ({ s, kind: 'training' })),
+    ...NUTRITION_RECOVERY.map((s) => ({ s, kind: 'nutrition' })),
+  ]
   return (
-    <figure className="hero-visual" aria-label="Example of a chat answer">
-      <div className="demo-window">
-        <div className="demo-bar caption-4 muted">
-          <ChatsCircle size={16} aria-hidden /> Chat
-        </div>
-        <div className="demo-body">
-          <p className="demo-user body-6">How much protein should I eat per day to build muscle?</p>
-          <div className="demo-bot body-6">
-            <p>
-              When bulking, aim for <strong>1.6 to 2.2 g per kg</strong> of body weight a day{' '}
-              <Cite seconds={110} label="1:50" />. For an 80 kg person that is about 125 to 180 g{' '}
-              <Cite seconds={123} label="2:03" />.
-            </p>
-            <p>
-              When cutting, go higher: <strong>1.8 to 2.7 g per kg</strong>, because the body is more
-              likely to break down muscle for energy <Cite seconds={143} label="2:23" />.
-            </p>
-            <p className="demo-source caption-5 muted">
-              Source: Jeff Nippard · The Smartest Way To Use Protein To Build Muscle
-            </p>
-          </div>
-        </div>
+    <div className="glass-card">
+      <div className="glass-head">
+        <h2 className="title-4 glass-title">3 hours, indexed</h2>
+        <span className="glass-badge caption-3 mono">179 min</span>
       </div>
-      <figcaption className="caption-5 muted">Example answer. Click a time to open the video at that second.</figcaption>
-    </figure>
+      <div className="bars" role="img" aria-label="Lengths of the 18 videos: 11 on training, 7 on nutrition and recovery">
+        {bars.map((b, i) => (
+          <span
+            key={i}
+            className={`bar bar-${b.kind}`}
+            style={{ '--h': (b.s / LONGEST).toFixed(3), '--d': `${i * 30}ms` }}
+          />
+        ))}
+      </div>
+      <div className="glass-foot caption-4">
+        <span><span className="dot dot-training" aria-hidden /> Training</span>
+        <span><span className="dot dot-nutrition" aria-hidden /> Nutrition and recovery</span>
+      </div>
+    </div>
+  )
+}
+
+function AccuracyCard() {
+  const r = 30
+  const c = 2 * Math.PI * r
+  return (
+    <div className="glass-card">
+      <div className="glass-head">
+        <h2 className="title-4 glass-title">Right video, first try</h2>
+      </div>
+      <div className="ring" role="img" aria-label="92 percent of test questions found the right video first">
+        <svg viewBox="0 0 72 72" width="88" height="88" aria-hidden>
+          <circle cx="36" cy="36" r={r} className="ring-track" />
+          <circle cx="36" cy="36" r={r} className="ring-value" strokeDasharray={`${c * HIT_AT_1} ${c}`} />
+        </svg>
+        <span className="ring-label heading-6 mono">{Math.round(HIT_AT_1 * 100)}<small className="caption-4">%</small></span>
+      </div>
+      <div className="glass-foot caption-4">
+        <span>Retrieval test</span>
+        <span className="glass-badge caption-3 mono">11 of 12</span>
+      </div>
+    </div>
   )
 }
 
 function Hero() {
   return (
-    <section className="hero container" aria-labelledby="hero-title">
-      <div className="hero-copy">
-        <p className="badge caption-4">
-          <Lightning size={12} weight="fill" aria-hidden /> Free · no account needed
-        </p>
-        <h1 id="hero-title" className="hero-title heading-3 md-heading-1">
-          Get the answer<br /> without watching<br /> the whole video
-        </h1>
-        <p className="hero-sub body-3 md-title-1">
-          Ask about 18 fitness videos on YouTube, about 3 hours of training, nutrition and recovery
-          advice. Every answer cites the video and the minute it comes from, so you can check it yourself.
-        </p>
-        <div className="hero-actions">
+    <section className="hero" aria-labelledby="hero-title">
+      <picture className="hero-photo">
+        <source media="(max-width: 767px)" srcSet="/hero-1200.jpg" />
+        <img src="/hero.jpg" alt="An athlete holding a loaded barbell at the bottom of a squat in a dark gym" fetchPriority="high" />
+      </picture>
+      <div className="hero-shade" aria-hidden />
+
+      <div className="hero-inner container">
+        <div className="hero-copy">
+          <p className="badge caption-4">
+            <Lightning size={12} weight="fill" aria-hidden /> Free · no account needed
+          </p>
+          <h1 id="hero-title" className="hero-title heading-3 md-heading-1">
+            Get the answer<br /> without watching<br /> the whole video
+          </h1>
+          <p className="hero-sub body-3 md-title-1">
+            Ask about 18 fitness videos on YouTube, about 3 hours of training, nutrition and recovery
+            advice. Every answer cites the video and the minute it comes from.
+          </p>
           <Cta />
+          <p className="hero-proof caption-2">
+            Built on videos from Jeff Nippard, Jeremy Ethier, Institute of Human Anatomy,
+            Precision Nutrition and 4 more channels.
+          </p>
         </div>
-        <p className="hero-proof caption-2 muted">
-          Built on videos from Jeff Nippard, Jeremy Ethier, Institute of Human Anatomy,
-          Precision Nutrition and 4 more channels.
-        </p>
+
+        <div className="hero-cards">
+          <LibraryCard />
+          <AccuracyCard />
+        </div>
       </div>
-      <HeroVisual />
     </section>
+  )
+}
+
+/* ---------- sections, each a full width band ---------- */
+
+function Band({ id, tone = 'base', label, children, className = '' }) {
+  return (
+    <section id={id} className={`band band-${tone} ${className}`} aria-labelledby={label}>
+      <div className="container reveal">{children}</div>
+    </section>
+  )
+}
+
+function SectionHead({ eyebrow, id, title, text }) {
+  return (
+    <div className="section-head">
+      <p className="eyebrow caption-3">{eyebrow}</p>
+      <h2 id={id} className="heading-4 md-heading-3">{title}</h2>
+      {text && <p className="body-3 muted">{text}</p>}
+    </div>
   )
 }
 
@@ -104,11 +165,8 @@ function Problem() {
     'Click a timestamp and hear the creator say it',
   ]
   return (
-    <section className="section container reveal" aria-labelledby="problem-title">
-      <div className="section-head">
-        <p className="eyebrow caption-3">The problem</p>
-        <h2 id="problem-title" className="heading-4 md-heading-3">The answer is in the video. Somewhere around minute 12.</h2>
-      </div>
+    <Band label="problem-title">
+      <SectionHead eyebrow="The problem" id="problem-title" title="The answer is in the video. Somewhere around minute 12." />
       <div className="compare">
         <div className="card">
           <h3 className="title-2">Watching to find it</h3>
@@ -127,7 +185,7 @@ function Problem() {
           </ul>
         </div>
       </div>
-    </section>
+    </Band>
   )
 }
 
@@ -141,11 +199,8 @@ const BENEFITS = [
 
 function Benefits() {
   return (
-    <section className="section container reveal" aria-labelledby="benefits-title">
-      <div className="section-head">
-        <p className="eyebrow caption-3">What you get</p>
-        <h2 id="benefits-title" className="heading-4 md-heading-3">Straight answers from coaches and scientists, with receipts</h2>
-      </div>
+    <Band tone="surface" label="benefits-title">
+      <SectionHead eyebrow="What you get" id="benefits-title" title="Straight answers from coaches and scientists, with receipts" />
       <ul className="benefits">
         {BENEFITS.map(({ icon: Icon, title, text }) => (
           <li key={title} className="card benefit">
@@ -155,19 +210,21 @@ function Benefits() {
           </li>
         ))}
       </ul>
-    </section>
+    </Band>
   )
 }
 
 function Tagline() {
   return (
-    <section className="section tagline-section container" aria-label="Why it matters">
-      <TaglineReveal
-        lines={[
-          'Every answer shows where it came from.',
-          'One click, and you hear it in the video yourself.',
-        ]}
-      />
+    <section className="band band-ink tagline-band" aria-label="Why it matters">
+      <div className="container">
+        <TaglineReveal
+          lines={[
+            'Every answer shows where it came from.',
+            'One click, and you hear it in the video yourself.',
+          ]}
+        />
+      </div>
     </section>
   )
 }
@@ -178,24 +235,53 @@ const STEPS = [
   { icon: Play, title: 'Read and check', text: 'You get a short answer with timestamp buttons that open YouTube at that second.' },
 ]
 
+function ExampleAnswer() {
+  return (
+    <figure className="demo" aria-label="Example of a chat answer">
+      <div className="demo-window">
+        <div className="demo-bar caption-4 muted">
+          <ChatsCircle size={16} aria-hidden /> Chat
+        </div>
+        <div className="demo-body">
+          <p className="demo-user body-6">How much protein should I eat per day to build muscle?</p>
+          <div className="demo-bot body-6">
+            <p>
+              When bulking, aim for <strong>1.6 to 2.2 g per kg</strong> of body weight a day{' '}
+              <Cite seconds={110} label="1:50" />. For an 80 kg person that is about 125 to 180 g{' '}
+              <Cite seconds={123} label="2:03" />.
+            </p>
+            <p>
+              When cutting, go higher: <strong>1.8 to 2.7 g per kg</strong>, because the body is more
+              likely to break down muscle for energy <Cite seconds={143} label="2:23" />.
+            </p>
+            <p className="caption-5 muted">Source: Jeff Nippard · The Smartest Way To Use Protein To Build Muscle</p>
+          </div>
+        </div>
+      </div>
+      <figcaption className="caption-5 muted">Example answer, checked against the transcript. Click a time to open the video at that second.</figcaption>
+    </figure>
+  )
+}
+
 function HowItWorks() {
   return (
-    <section id="how" className="section container reveal" aria-labelledby="how-title">
-      <div className="section-head">
-        <p className="eyebrow caption-3">How it works</p>
-        <h2 id="how-title" className="heading-4 md-heading-3">Three steps from question to source</h2>
+    <Band id="how" label="how-title">
+      <SectionHead eyebrow="How it works" id="how-title" title="Three steps from question to source" />
+      <div className="how">
+        <ol className="steps">
+          {STEPS.map(({ icon: Icon, title, text }, i) => (
+            <li key={title} className="step">
+              <span className="icon-tile" aria-hidden><Icon size={20} /></span>
+              <div>
+                <h3 className="title-2"><span className="step-number mono">0{i + 1}</span> {title}</h3>
+                <p className="body-6 muted">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <ExampleAnswer />
       </div>
-      <ol className="steps">
-        {STEPS.map(({ icon: Icon, title, text }, i) => (
-          <li key={title} className="card step">
-            <span className="step-number caption-3 mono">0{i + 1}</span>
-            <span className="icon-tile" aria-hidden><Icon size={20} /></span>
-            <h3 className="title-2">{title}</h3>
-            <p className="body-6 muted">{text}</p>
-          </li>
-        ))}
-      </ol>
-    </section>
+    </Band>
   )
 }
 
@@ -209,24 +295,20 @@ const STATS = [
 
 function Proof() {
   return (
-    <section className="section container reveal" aria-labelledby="proof-title">
-      <div className="section-head">
-        <p className="eyebrow caption-3">Tested, not guessed</p>
-        <h2 id="proof-title" className="heading-4 md-heading-3">Checked against questions with known answers</h2>
-        <p className="body-3 muted">
-          Before launch, it answered a test set written from the transcripts. Every number in the
-          answers was checked against what the video actually says.
-        </p>
-      </div>
+    <Band tone="surface" label="proof-title">
+      <SectionHead
+        eyebrow="Tested, not guessed" id="proof-title" title="Checked against questions with known answers"
+        text="Before launch, it answered a test set written from the transcripts. Every number in the answers was checked against what the video actually says."
+      />
       <dl className="stats">
         {STATS.map((s) => (
           <div key={s.value + s.label} className="card stat">
-            <dt className="heading-5 mono">{s.value}</dt>
+            <dt className="heading-4 mono stat-value">{s.value}</dt>
             <dd className="body-6 muted">{s.label}</dd>
           </div>
         ))}
       </dl>
-    </section>
+    </Band>
   )
 }
 
@@ -243,15 +325,14 @@ function Videos() {
   }, [])
 
   return (
-    <section id="videos" className="section container reveal" aria-labelledby="videos-title">
-      <div className="section-head">
-        <p className="eyebrow caption-3">The library</p>
-        <h2 id="videos-title" className="heading-4 md-heading-3">What it has watched for you</h2>
-        <p className="body-3 muted">18 videos from 8 channels. Ask about any of them, or about all of them at once.</p>
-      </div>
+    <Band id="videos" label="videos-title">
+      <SectionHead
+        eyebrow="The library" id="videos-title" title="What it has watched for you"
+        text="18 videos from 8 channels. Ask about any of them, or about all of them at once."
+      />
       {error && <p className="inline-error body-6" role="alert">{error}</p>}
       <ul className="video-grid" aria-busy={!videos && !error}>
-        {!videos && !error && Array.from({ length: 6 }, (_, i) => (
+        {!videos && !error && Array.from({ length: 8 }, (_, i) => (
           <li key={i} className="video-card" aria-hidden>
             <div className="video-thumb skeleton" />
             <div className="skeleton skeleton-line" />
@@ -271,38 +352,44 @@ function Videos() {
           </li>
         ))}
       </ul>
-    </section>
+    </Band>
   )
 }
 
 function Faq() {
   return (
-    <section id="faq" className="section container reveal" aria-labelledby="faq-title">
-      <div className="section-head">
-        <p className="eyebrow caption-3">FAQ</p>
-        <h2 id="faq-title" className="heading-4 md-heading-3">Questions before your first question</h2>
+    <Band id="faq" tone="surface" label="faq-title">
+      <div className="faq-layout">
+        <SectionHead
+          eyebrow="FAQ" id="faq-title" title="Questions before your first question"
+          text="Something missing? Ask it in the chat. If the videos do not cover it, the bot will tell you."
+        />
+        <div className="faq">
+          {FAQ.map(({ q, a }) => (
+            <details key={q} className="faq-item">
+              <summary className="title-3">
+                {q}
+                <span className="faq-icon" aria-hidden />
+              </summary>
+              <p className="body-6 muted">{a}</p>
+            </details>
+          ))}
+        </div>
       </div>
-      <div className="faq">
-        {FAQ.map(({ q, a }) => (
-          <details key={q} className="faq-item">
-            <summary className="title-3">
-              {q}
-              <span className="faq-icon" aria-hidden />
-            </summary>
-            <p className="body-6 muted">{a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
+    </Band>
   )
 }
 
 function FinalCta() {
   return (
-    <section className="section container reveal" aria-labelledby="final-title">
-      <div className="final card">
-        <h2 id="final-title" className="heading-4 md-heading-3">Your next question, answered with a timestamp</h2>
-        <p className="body-3 muted">Free to use. No account. Nothing to install.</p>
+    <section className="band final-band" aria-labelledby="final-title">
+      <picture className="hero-photo" aria-hidden>
+        <img src="/hero-1200.jpg" alt="" loading="lazy" />
+      </picture>
+      <div className="hero-shade final-shade" aria-hidden />
+      <div className="container final reveal">
+        <h2 id="final-title" className="hero-title heading-4 md-heading-2">Your next question,<br /> answered with a timestamp</h2>
+        <p className="body-3 md-title-1 hero-sub">Free to use. No account. Nothing to install.</p>
         <Cta />
       </div>
     </section>

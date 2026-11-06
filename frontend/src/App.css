@@ -29,14 +29,13 @@
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   transition: color var(--t-hover) var(--ease);
 }
-.video-title:hover { color: var(--accent); }
+.video-title:hover { color: var(--accent-ink); }
 .link-btn {
   align-self: flex-start; display: inline-flex; align-items: center; gap: var(--s-50);
   margin-top: var(--s-25); padding: var(--s-25) var(--s-75); border: none; border-radius: var(--r-md);
-  background: none; color: var(--accent);
+  background: none; color: var(--accent-ink);
   transition: background-color var(--t-hover) var(--ease), transform var(--t-hover) var(--ease);
 }
-@media (prefers-color-scheme: dark) { .link-btn { color: var(--cite-text); } }
 .link-btn:hover:not(:disabled) { background: var(--surface-2); }
 .link-btn:active:not(:disabled) { transform: scale(0.98); }
 .video .line, .msg-skeleton .line { height: 12px; width: 100%; }

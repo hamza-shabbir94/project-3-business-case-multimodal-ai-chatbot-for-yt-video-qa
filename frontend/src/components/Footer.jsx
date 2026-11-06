@@ -13,6 +13,10 @@ export default function Footer() {
             An Ironhack AI Engineering final project. Video content belongs to its creators.
             Answers are general information, not medical advice.
           </p>
+          <p className="caption-5 muted">
+            Hero photo by Binyamin Mellish,{' '}
+            <a href="https://commons.wikimedia.org/wiki/File:Man_lifting_a_heavy_barbell.jpg" target="_blank" rel="noreferrer">CC0</a>.
+          </p>
         </div>
         <ul className="footer-links body-6">
           <li><a href="/privacy/">Privacy</a></li>

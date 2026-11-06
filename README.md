@@ -396,7 +396,9 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 | Browser console | no errors |
 
 ### Design pass: landing page and design system
-The site follows a landing page design skill (page structure, conversion copy, and strict visual rules).
+The site is called **Liftline** (lift + timeline: every answer points to a moment on a video's timeline). It follows a landing page design skill (page structure, conversion copy, and strict visual rules).
+
+- **Full screen hero:** a dark gym photo (CC0, Binyamin Mellish, credited in the footer) under a flat shade, an uppercase headline on the right, and two glass cards with real project data: the lengths of the 18 videos by topic (179 min) and the retrieval score (right video first for 11 of 12 test questions). Every section below is a full width band, alternating base, surface and black backgrounds, and the final call to action sits on the photo again. Orange accent (`#ff6b1a`) with dark button text for contrast.
 
 - **Pages:** `/` landing page, `/chat/` the chat app, `/privacy/`, `/terms/`, and a branded 404. Each is its own HTML file, so Vercel serves them as static files. `/chat`, `/privacy` and `/terms` redirect to the version with a slash (`vercel.json`).
 - **Landing page (layout A, classic hero plus sections):** hero with one call to action ("Ask your first question") and a real example answer with working timestamp links; problem and solution; 5 benefits; a large tagline whose words light up one by one while scrolling; how it works in 3 steps; test results as proof; the 18 videos; 9 FAQ answers; final call to action. All numbers come from this README's test results. There are no invented testimonials.

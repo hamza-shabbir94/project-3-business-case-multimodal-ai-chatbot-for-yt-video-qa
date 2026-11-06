@@ -65,11 +65,10 @@
 }
 
 /* ---------- page container + sections ---------- */
-.container { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 var(--s-200); }
+.container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 var(--s-200); }
 @media (min-width: 768px) { .container { padding: 0 var(--s-400); } }
 
-.eyebrow { color: var(--accent); }
-@media (prefers-color-scheme: dark) { .eyebrow { color: var(--cite-text); } }
+.eyebrow { color: var(--accent-ink); text-transform: uppercase; letter-spacing: 0.08em; }
 
 /* ---------- tagline reveal (B11) ---------- */
 .tagline { max-width: 680px; }
@@ -80,7 +79,7 @@
 /* ---------- footer ---------- */
 .footer { padding: var(--s-600) 0 var(--s-400); }
 .footer-inner {
-  max-width: 1120px; margin: 0 auto; padding: var(--s-300) var(--s-200) 0;
+  max-width: 1280px; margin: 0 auto; padding: var(--s-300) var(--s-200) 0;
   display: flex; flex-wrap: wrap; gap: var(--s-300); justify-content: space-between; align-items: flex-start;
 }
 @media (min-width: 768px) { .footer-inner { padding: var(--s-300) var(--s-400) 0; } }
