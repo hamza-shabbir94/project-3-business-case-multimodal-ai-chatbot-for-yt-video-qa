@@ -1,7 +1,9 @@
+import { ChatsCircle, FilmStrip, Plus } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { getHistory, getVideos, sendMessage } from './api'
 import Composer from './components/Composer'
 import Message from './components/Message'
+import Nav from './components/Nav'
 import VideoList from './components/VideoList'
 import './App.css'
 
@@ -20,8 +22,20 @@ const storage = {
   clear: () => { try { localStorage.removeItem(THREAD_KEY) } catch { /* ignore */ } },
 }
 
+// Placeholder shaped like an answer while the agent works (B9: skeleton, not a spinner)
+function AnswerSkeleton() {
+  return (
+    <div className="msg msg-bot msg-skeleton" role="status" aria-label="Writing the answer">
+      <div className="skeleton line" />
+      <div className="skeleton line" />
+      <div className="skeleton line short" />
+    </div>
+  )
+}
+
 export default function App() {
-  const [videos, setVideos] = useState([])
+  const [videos, setVideos] = useState(null) // null = still loading
+  const [videosError, setVideosError] = useState('')
   const [messages, setMessages] = useState([])
   const [threadId, setThreadId] = useState(storage.get)
   const [loading, setLoading] = useState(false)
@@ -29,7 +43,12 @@ export default function App() {
   const endRef = useRef(null)
 
   useEffect(() => {
-    getVideos().then(setVideos).catch(() => setVideos([]))
+    getVideos()
+      .then(setVideos)
+      .catch(() => {
+        setVideos([])
+        setVideosError('The video list did not load. You can still ask questions.')
+      })
   }, [])
 
   // reload the saved conversation (memory lives in Neon Postgres)
@@ -76,25 +95,16 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <span className="logo" aria-hidden>🏋️</span>
-          <div>
-            <h1>Fitness Video QA</h1>
-            <p>Answers from {videos.length || 18} YouTube videos, with timestamps</p>
-          </div>
-        </div>
-        <div className="topbar-actions">
-          <button type="button" className="ghost-btn videos-toggle" onClick={() => setShowVideos((s) => !s)}>
-            {showVideos ? 'Chat' : 'Videos'}
-          </button>
-          <button type="button" className="ghost-btn" onClick={newChat} disabled={loading}>New chat</button>
-        </div>
-      </header>
+      <a className="skip-link button-sm" href="#main">Skip to content</a>
+      <Nav current="chat" floating={false} />
 
-      <div className="layout">
-        <aside className={`sidebar${showVideos ? ' open' : ''}`}>
-          <h2>Knowledge base</h2>
+      <div className="shell">
+        <aside className={`sidebar${showVideos ? ' open' : ''}`} aria-label="Videos">
+          <div className="sidebar-head">
+            <h2 className="title-4">Knowledge base</h2>
+            <p className="caption-5 muted">{videos?.length || 18} videos. Summarize any of them.</p>
+          </div>
+          {videosError && <p className="inline-error caption-2" role="alert">{videosError}</p>}
           <VideoList
             videos={videos}
             disabled={loading}
@@ -102,23 +112,43 @@ export default function App() {
           />
         </aside>
 
-        <main className="chat">
+        <main id="main" className="chat">
+          <div className="chat-toolbar">
+            <div>
+              <h1 className="title-3">Chat</h1>
+              <p className="caption-5 muted">Answers from the videos, with timestamps</p>
+            </div>
+            <div className="toolbar-actions">
+              <button type="button" className="btn btn-secondary button-sm videos-toggle" onClick={() => setShowVideos((s) => !s)}>
+                {showVideos ? <ChatsCircle size={16} aria-hidden /> : <FilmStrip size={16} aria-hidden />}
+                {showVideos ? 'Chat' : 'Videos'}
+              </button>
+              <button type="button" className="btn btn-secondary button-sm" onClick={newChat} disabled={loading || messages.length === 0}>
+                <Plus size={16} aria-hidden /> New chat
+              </button>
+            </div>
+          </div>
+
           <div className="messages" aria-live="polite">
             {messages.length === 0 && (
               <div className="empty">
-                <h2>Ask anything about training, nutrition or recovery</h2>
-                <p>Type or use the microphone. Every answer links to the moment in the video it comes from.</p>
+                <span className="empty-icon" aria-hidden><ChatsCircle size={24} /></span>
+                <h2 className="heading-6 md-heading-5">Ask anything about training, nutrition or recovery</h2>
+                <p className="body-6 muted">
+                  Type or use the microphone. Every answer links to the moment in the video it comes from.
+                  Start with one of these:
+                </p>
                 <div className="examples">
                   {EXAMPLES.map((q) => (
-                    <button key={q} type="button" onClick={() => ask(q)}>{q}</button>
+                    <button key={q} type="button" className="example body-6" onClick={() => ask(q)}>{q}</button>
                   ))}
                 </div>
               </div>
             )}
             {messages.map((m, i) => (
-              <Message key={i} {...m} videos={videos} />
+              <Message key={i} {...m} videos={videos ?? []} />
             ))}
-            {loading && <div className="msg msg-bot typing" aria-label="Thinking"><span /><span /><span /></div>}
+            {loading && <AnswerSkeleton />}
             <div ref={endRef} />
           </div>
           <Composer onSend={ask} disabled={loading} />

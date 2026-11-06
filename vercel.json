@@ -17,8 +17,35 @@
       }
     }
   },
+  "redirects": [
+    {
+      "source": "/chat",
+      "destination": "/chat/",
+      "permanent": true
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/",
+      "permanent": true
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": { "service": "backend" } },
-    { "source": "/(.*)", "destination": { "service": "frontend" } }
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "frontend"
+      }
+    }
   ]
 }

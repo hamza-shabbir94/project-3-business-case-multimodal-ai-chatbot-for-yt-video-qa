@@ -141,8 +141,13 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 │   ├── openapi.json          # API contract, generated from app.py (Phase 5)
 │   ├── tests/test_api.py     # API tests: 13 free + 3 live (Phase 5)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
-├── frontend/                 # React + Vite chat app (Phase 6)
-│   ├── src/App.jsx           # layout, chat state, thread_id in localStorage, history reload
+├── frontend/                 # React + Vite site (Phase 6): one HTML file per page
+│   ├── index.html            # / landing page (src/pages/Landing.jsx)
+│   ├── chat/index.html       # /chat/ chat app (src/App.jsx)
+│   ├── privacy/, terms/, 404.html   # legal pages and branded 404 (src/pages/StaticPage.jsx)
+│   ├── src/styles/tokens.css # design system: colors, text styles, spacing, radius, motion
+│   ├── src/content/faq.js    # FAQ text, also written into the landing page as FAQ schema
+│   ├── src/App.jsx           # chat: layout, chat state, thread_id in localStorage, history reload
 │   ├── src/components/       # Message (markdown + citation links), Composer (text + mic), VideoList
 │   ├── src/citations.js      # [Title, m:ss] -> YouTube link at that second (+ citations.test.js)
 │   ├── src/api.js            # calls to /api/*
@@ -389,6 +394,17 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 | New chat | empty chat |
 | Phone width 390 px | no horizontal scroll; Videos button swaps the list and the chat |
 | Browser console | no errors |
+
+### Design pass: landing page and design system
+The site follows a landing page design skill (page structure, conversion copy, and strict visual rules).
+
+- **Pages:** `/` landing page, `/chat/` the chat app, `/privacy/`, `/terms/`, and a branded 404. Each is its own HTML file, so Vercel serves them as static files. `/chat`, `/privacy` and `/terms` redirect to the version with a slash (`vercel.json`).
+- **Landing page (layout A, classic hero plus sections):** hero with one call to action ("Ask your first question") and a real example answer with working timestamp links; problem and solution; 5 benefits; a large tagline whose words light up one by one while scrolling; how it works in 3 steps; test results as proof; the 18 videos; 9 FAQ answers; final call to action. All numbers come from this README's test results. There are no invented testimonials.
+- **Design system (`src/styles/tokens.css`):** one font (Geist, with Geist Mono for timestamps); named text styles (`heading-1`, `body-6`, `caption-5`, ...) on the Tailwind type scale; spacing only from 2 to 96 px steps; Tailwind radii with nested radius = outer minus gap; flat backgrounds (the only gradient is on the hero heading text); approved dark backgrounds; Phosphor icons; one easing curve, `cubic-bezier(0.22, 1, 0.36, 1)`, animating only transform and opacity, with `prefers-reduced-motion` support.
+- **States:** skeleton loaders shaped like the video list and an answer (no spinners), a composed empty chat, inline errors, hover, press and focus styles on every button, and a skip-to-content link.
+- **SEO:** title, description, canonical, Open Graph and Twitter tags, `og.png` (1200 x 630), and FAQ schema (JSON-LD) built from `src/content/faq.js`.
+
+**Tests (headless Chrome, light and dark, 1440 px and 390 px):** no horizontal scroll at 390 px, the call to action is in the first screen on phones, all sections and all 17 tagline words reveal, the mobile menu opens and closes with Escape, only Geist fonts load, and the copy has no hyphens, no italics, no weights above 700 and none of the banned filler words. No console errors. The chat end-to-end test (answer with 10 citation links, follow-up from memory, reload from Neon, voice question, new chat, phone layout) passes in the new design, both with the Vite dev server and with `vercel dev -L`.
 
 ### Phase 7: Deploy on Vercel
 One Vercel project, `fitness-video-qa`, with two [Vercel Services](https://vercel.com/docs/services) on one domain:

@@ -1,3 +1,4 @@
+import { Microphone, PaperPlaneRight, Stop } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { transcribe } from '../api'
 import { useRecorder } from '../useRecorder'
@@ -47,17 +48,18 @@ export default function Composer({ onSend, disabled }) {
   const busy = disabled || transcribing
   return (
     <form className="composer" onSubmit={submit}>
-      {micError && <p className="mic-error">{micError}</p>}
+      {micError && <p className="mic-error caption-2" role="alert">{micError}</p>}
       <div className="composer-row">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={recording ? 'Listening… click ■ to stop' : transcribing ? 'Transcribing…' : 'Ask about the videos…'}
+          placeholder={recording ? 'Listening. Press stop when you are done.' : transcribing ? 'Turning your voice into text…' : 'Ask about the videos…'}
           rows={1}
           maxLength={2000}
           disabled={transcribing}
           aria-label="Your question"
+          className="body-3"
         />
         <button
           type="button"
@@ -67,10 +69,10 @@ export default function Composer({ onSend, disabled }) {
           aria-label={recording ? 'Stop recording' : 'Ask with your voice'}
           title={recording ? 'Stop recording' : 'Ask with your voice'}
         >
-          {recording ? '■' : '🎤'}
+          {recording ? <Stop size={20} weight="fill" /> : <Microphone size={20} />}
         </button>
-        <button type="submit" className="send-btn" disabled={busy || recording || !text.trim()}>
-          Send
+        <button type="submit" className="btn btn-primary button-md send-btn" aria-label="Send" disabled={busy || recording || !text.trim()}>
+          <PaperPlaneRight size={16} weight="fill" aria-hidden /> <span className="send-label">Send</span>
         </button>
       </div>
     </form>
