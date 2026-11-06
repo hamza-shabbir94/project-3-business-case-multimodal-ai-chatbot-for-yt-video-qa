@@ -28,7 +28,7 @@
   .hero-copy { grid-column: 2; grid-row: 1 / span 2; align-self: center; align-items: flex-end; text-align: right; }
   .hero-cards { grid-column: 1; grid-row: 2; align-self: end; }
   /* move the lifter left so the heading has open space on the right */
-  .hero .hero-photo img { width: 125%; left: -22%; }
+  .hero .hero-photo img { left: -22%; width: 122%; max-width: none; }
 }
 
 .badge {
