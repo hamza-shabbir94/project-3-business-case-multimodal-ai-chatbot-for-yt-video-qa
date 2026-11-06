@@ -132,14 +132,17 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 
 ```
 ├── backend/
-│   ├── data/                 # 18 transcripts as JSON (Phase 1)
+│   ├── data/                 # 32 transcripts as JSON (Phase 1, extended for the weekly plan)
 │   ├── vectorstore.py        # Pinecone index + OpenAI embeddings, shared (Phase 2)
 │   ├── rag.py                # baseline RAG chain: retriever -> prompt -> gpt-4o-mini (Phase 3)
 │   ├── catalog.py            # reads full transcripts for list / info / summarize (Phase 4)
-│   ├── agent.py              # LangGraph agent: 4 tools + memory per thread_id (Phase 4)
+│   ├── agent.py              # LangGraph agent: 5 tools + memory per thread_id (Phase 4)
+│   ├── planner.py            # weekly plan builder: rules from the videos, no LLM (weekly plan)
+│   ├── exercises.json        # 23 exercises: demo second + form cues (built by scripts/build_exercises.py)
 │   ├── app.py                # FastAPI: /api/chat, /api/transcribe, /api/history, /api/videos (Phase 5)
 │   ├── openapi.json          # API contract, generated from app.py (Phase 5)
-│   ├── tests/test_api.py     # API tests: 13 free + 3 live (Phase 5)
+│   ├── tests/test_api.py     # API tests: 13 free + 4 live (Phase 5)
+│   ├── tests/test_planner.py # plan builder: 2,405 free tests (every input combination)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
 ├── frontend/                 # React + Vite site (Phase 6): one HTML file per page
 │   ├── index.html            # / landing page (src/pages/Landing.jsx)
@@ -195,6 +198,9 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 # Phase 1: collect transcripts for every link in scripts/videos.txt
 .venv/bin/python scripts/ingest.py                  # skips videos already saved
 .venv/bin/python scripts/ingest.py --force-whisper  # test the Whisper path
+
+# Weekly plan: rebuild the exercise catalog (finds the exact second of every form cue)
+.venv/bin/python scripts/build_exercises.py --show
 
 # Phase 2: chunk, embed and upload to Pinecone
 .venv/bin/python scripts/index_videos.py --dry-run  # show chunks only, no API calls
@@ -408,6 +414,33 @@ The site is called **Liftline** (lift + timeline: every answer points to a momen
 
 **Tests (headless Chrome, light and dark, 1440 px and 390 px):** no horizontal scroll at 390 px, the call to action is in the first screen on phones, all sections and all 17 tagline words reveal, the mobile menu opens and closes with Escape, only Geist fonts load, and the copy has no hyphens, no italics, no weights above 700 and none of the banned filler words. No console errors. The chat end-to-end test (answer with 10 citation links, follow-up from memory, reload from Neon, voice question, new chat, phone layout) passes in the new design, both with the Vite dev server and with `vercel dev -L`.
 
+### Feature: weekly workout plan
+A "Create my plan" form in the chat (goal, days per week, experience, equipment, time per workout, anything that hurts) gives a weekly plan. Every exercise has a simple diagram, form cues and a video demo that starts at the right second.
+
+```
+form -> chat message -> agent -> create_weekly_plan tool -> planner.py (no LLM)
+                                                               |-- split for the days     (rules from the videos)
+                                                               |-- exercises.json         (equipment, avoid, demo, cues)
+                                                               |-- sets, reps, rest       (rules from the videos)
+                                                               '-- fit to the time per workout
+     <- short answer with a citation + the plan as structured data -> plan card in the chat
+```
+
+- **14 new videos** (technique for overhead press, rows, pull ups, pulldown, Romanian deadlift, hip thrust, push ups, split squats, plank, arms, home training, short sessions): 32 videos, 510 passages in Pinecone.
+- **Plan builder (`backend/planner.py`) is plain code, not an LLM**, so the same inputs always give the same plan and every input combination is tested. Each programming rule is a quote from a video with its second, for example "10 to 20 sets per muscle per week" (Jeremy Ethier, 2:02), "8 to 15 reps for muscle growth" (Institute of Human Anatomy, 14:20), "push, pull, legs for 6 days" (trainer winny, 2:22), "combine weights and cardio for fat loss" (Precision Nutrition, 5:00).
+- **Splits:** 2 to 3 days full body, 4 days workout A and B, 5 days push, pull, legs plus upper and lower, 6 days push, pull, legs twice. Sets per exercise come from the weekly target (6, 10 or 14 sets per muscle), capped at 2 to 4; beginners get 8 to 10 reps; "get stronger" gets heavy 3 to 5 rep sets on the main barbell lifts. Exercises that are left out of a session to fit the time are the last accessories.
+- **Exercise catalog (`backend/exercises.json`, 23 exercises, 69 cues):** gym, dumbbell and bodyweight versions, and which joints each one loads (knees, lower back, shoulders), so "my knee hurts" swaps the barbell squat for a box squat. The cues were drafted by an LLM from the transcripts; `scripts/build_exercises.py` finds the exact second of each cue in the transcript and fails if the words are not there, and every cue was then checked by hand.
+- **Agent:** the form becomes a normal chat message, so memory works: "make it 3 days" or "my lower back hurts" rebuilds the plan with the earlier answers kept. The agent replies in 2 to 4 sentences with one cited rule; the plan itself goes to the frontend as structured data (`plan` in the `/api/chat` response, typed in `openapi.json`).
+- **Frontend:** plan card with one tab per day; each exercise opens to show the diagram (start and end position, drawn as joint coordinates in `src/content/poses.js`), the cues with timestamp links, and a YouTube player that loads only when clicked and starts at the demo second.
+
+**Tests:**
+- `pytest backend/tests/test_planner.py`: 2,405 tests. Every combination of goal, days, experience, equipment, session length and painful joints (2,400 plans) respects the equipment and the avoided joints, keeps 2 to 4 sets per exercise and fits the session length; every cue and rule points to a second inside its video.
+- Live API test: a plan request returns 4 days with demo links; "My knee hurts" keeps the 4 days and adds knees to avoid; the plan comes back from the history.
+- `npm test`: 9 tests, including "every exercise has a diagram" and the joined citation fix below.
+- Browser test (headless Chrome): form -> plan card with 4 day tabs and the chosen inputs -> diagrams, cue links with `&t=` -> video player starts at the demo second -> day 2 tab -> 11 cited rules -> "Make it 3 days instead" gives a 3 day plan with the same inputs -> plans come back after a reload -> no overflow at 390 px -> no console errors.
+
+**Fixed while testing:** with 32 videos the video section is about 8,000 px tall on phones, so the 10% scroll reveal threshold was never reached (now 0); the model once joined two citations in one bracket (`[A, 3:17; B, 2:03]`), which the link converter now splits.
+
 ### Phase 7: Deploy on Vercel
 One Vercel project, `fitness-video-qa`, with two [Vercel Services](https://vercel.com/docs/services) on one domain:
 
@@ -438,6 +471,10 @@ https://<project>.vercel.app/*      ->  frontend (Vite build, served from the CD
 - **Calculated numbers:** the agent sometimes works out its own example from a video's range ("for 180 lbs, about 145-218 g"). The math is close, but the number is not said in any video. To be measured in the Phase 8 evaluation.
 - **Public API with no login:** anyone with the URL can ask questions, which costs OpenAI credits. Set a monthly spending limit in the OpenAI dashboard; rate limiting would be the next step.
 - **Growing history:** every message of a thread is sent to the model again. Fine for a demo; long threads would need trimming or summarizing old messages.
+- **Exercise diagrams are simplified:** stick figures from the side, drawn by hand from joint coordinates. They remind of the start and end position; the video demo shows the real technique.
+- **Demo start times:** for some technique videos the demo link starts at 0:20, near the start of the video, not at a precise second.
+- **Plan programming is rule based:** it covers the rules found in the 32 videos (volume, reps, rest, splits). It does not adapt week to week or know about specific injuries beyond "spare knees, lower back or shoulders".
+- **`vercel dev` and the 404 route:** the service level 404 route in `vercel.json` runs before the Vite dev server in `vercel dev`, so every page shows the 404 there. Production is not affected (static files are served first). For local work, use `npm run dev` with uvicorn.
 - **`av` version pin:** `av` 16+ breaks `faster-whisper` 1.2.x, so `scripts/requirements.txt` pins `av<16`.
 
 ## Design Decisions: README Points We Interpret Differently
@@ -522,4 +559,23 @@ Topic: **fitness** (strength training, muscle growth, nutrition, recovery). Tran
 | 17 | [How To Maximize Gains and NOT Overtrain - Overtraining Science Explained](https://www.youtube.com/watch?v=NLqq_dJB0iM) | Jeff Nippard | 7:14 | Whisper (local) |
 | 18 | [How Sleep Powers Muscle Growth](https://www.youtube.com/watch?v=pUZvynhxYb4) | Institute of Human Anatomy | 10:54 | Whisper (local) |
 
-**Total:** 18 videos, about 179 minutes. Whisper was used when a video had no captions or YouTube blocked the captions request.
+### Exercise technique and programming (added for the weekly plan)
+
+| # | Video | Channel | Length | Transcript source |
+|---|---|---|---|---|
+| 19 | [Build Bigger Shoulders With Perfect Training Technique (The Overhead Press)](https://www.youtube.com/watch?v=_RlRDWO2jfg) | Jeff Nippard | 7:58 | Auto captions |
+| 20 | [How To PROPERLY Barbell Row For A Bigger Back (Stop Making These Mistakes!)](https://www.youtube.com/watch?v=kBWAon7ItDw) | Jeremy Ethier | 9:30 | Whisper (local) |
+| 21 | [How To Get MORE Gains From Pull-Ups (4 Mistakes You Need To Fix)](https://www.youtube.com/watch?v=D-TL5hDQucI) | Jeremy Ethier | 8:22 | Auto captions |
+| 22 | [The ONLY 2 Exercises You Need For A Wide Back](https://www.youtube.com/watch?v=b_eislFFVhk) | Jeremy Ethier | 10:19 | Auto captions |
+| 23 | [HOW TO DO ROMANIAN DEADLIFTS (RDLs): Build Beefy Hamstrings With Perfect Technique](https://www.youtube.com/watch?v=_oyxCn2iSjU) | Jeff Nippard | 6:21 | Auto captions |
+| 24 | [How To Build Great Glutes with Perfect Hip Thrust Technique (Fix Mistakes!)](https://www.youtube.com/watch?v=xDmFkJxPzeM) | Jeff Nippard | 7:12 | Auto captions |
+| 25 | [The Perfect Push-Up To Build Muscle (AVOID THESE MISTAKES!)](https://www.youtube.com/watch?v=MO10KOoQx5E) | Jeremy Ethier | 9:49 | Auto captions |
+| 26 | [The ONLY 2 Exercises You Need For A Thicker Back](https://www.youtube.com/watch?v=JdjJC6eIk44) | Jeremy Ethier | 8:51 | Auto captions |
+| 27 | [How To Squat Without Knee Pain (4 Mistakes You’re Probably Making)](https://www.youtube.com/watch?v=W73Mc0Gil9A) | Jeremy Ethier | 8:46 | Auto captions |
+| 28 | [The Best Science-Based DUMBBELL Legs Exercises For Size And Symmetry](https://www.youtube.com/watch?v=jVabPEjDCHY) | Jeremy Ethier | 10:18 | Auto captions |
+| 29 | [How To Plank (Proper Form \| Cues \| Progressions)](https://www.youtube.com/watch?v=A2b2EmIg0dA) | E3 Rehab | 3:59 | Auto captions |
+| 30 | [The ONLY 2 Exercises You Need For Massive Arms](https://www.youtube.com/watch?v=WvlDMlMx1Ok) | Jeremy Ethier | 11:35 | Auto captions |
+| 31 | [How To Build Muscle At Home: The BEST Full Body Home Workout For Growth](https://www.youtube.com/watch?v=95846CBGU0M) | Jeremy Ethier | 11:58 | Auto captions |
+| 32 | [The Best Science-Based Minimalist Workout Plan (Under 45 Mins)](https://www.youtube.com/watch?v=eMjyvIQbn9M) | Jeff Nippard | 13:07 | Auto captions |
+
+**Total:** 32 videos from 9 channels, about 307 minutes. Whisper was used when a video had no captions or YouTube blocked the captions request.

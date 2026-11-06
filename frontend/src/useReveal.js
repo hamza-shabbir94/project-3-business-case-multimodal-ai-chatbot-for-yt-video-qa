@@ -17,7 +17,8 @@ export function useReveal() {
           observer.unobserve(entry.target) // reveal once, never replay
         }
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
+      // threshold 0: very tall sections (32 video cards on a phone) never reach a percentage
+      { rootMargin: '0px 0px -10% 0px', threshold: 0 },
     )
     items.forEach((el) => observer.observe(el))
     return () => observer.disconnect()

@@ -1,0 +1,804 @@
+[
+ {
+  "id": "back_squat",
+  "name": "Barbell back squat",
+  "video_id": "gcNh17Ckjgg",
+  "demo_seconds": 20,
+  "slots": {
+   "squat": 1
+  },
+  "equipment": [
+   "gym"
+  ],
+  "stresses": [
+   "knees",
+   "lower_back"
+  ],
+  "muscle": "quads",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Feet about hip width apart, toes pointing out slightly.",
+    "video_id": "gcNh17Ckjgg",
+    "seconds": 52
+   },
+   {
+    "text": "Rest the bar on the meat of your traps, not too high on the neck.",
+    "video_id": "gcNh17Ckjgg",
+    "seconds": 78
+   },
+   {
+    "text": "Take a deep breath and brace your core before you go down.",
+    "video_id": "gcNh17Ckjgg",
+    "seconds": 190
+   },
+   {
+    "text": "Push your knees out in the same direction as your toes.",
+    "video_id": "gcNh17Ckjgg",
+    "seconds": 213
+   }
+  ]
+ },
+ {
+  "id": "goblet_squat",
+  "name": "Goblet squat",
+  "video_id": "jVabPEjDCHY",
+  "demo_seconds": 489,
+  "slots": {
+   "squat": 2
+  },
+  "equipment": [
+   "gym",
+   "dumbbells"
+  ],
+  "stresses": [
+   "knees"
+  ],
+  "muscle": "quads",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Keep the weight over your mid foot and press the whole foot into the ground.",
+    "video_id": "W73Mc0Gil9A",
+    "seconds": 73
+   },
+   {
+    "text": "Keep your knees in line with your toes.",
+    "video_id": "W73Mc0Gil9A",
+    "seconds": 240
+   },
+   {
+    "text": "Push hard even with lighter dumbbells to build up fatigue.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 524
+   }
+  ]
+ },
+ {
+  "id": "box_squat",
+  "name": "Box squat",
+  "video_id": "W73Mc0Gil9A",
+  "demo_seconds": 425,
+  "slots": {
+   "squat": 3
+  },
+  "equipment": [
+   "gym",
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "quads",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Squat down to a box or chair to control how deep you go.",
+    "video_id": "W73Mc0Gil9A",
+    "seconds": 419
+   },
+   {
+    "text": "If regular squats hurt your knees, box squats are a good alternative.",
+    "video_id": "W73Mc0Gil9A",
+    "seconds": 451
+   },
+   {
+    "text": "Keep the weight over your mid foot, not on your toes.",
+    "video_id": "W73Mc0Gil9A",
+    "seconds": 73
+   }
+  ]
+ },
+ {
+  "id": "deadlift",
+  "name": "Deadlift",
+  "video_id": "XxWcirHIwVo",
+  "demo_seconds": 20,
+  "slots": {
+   "hinge": 1
+  },
+  "equipment": [
+   "gym"
+  ],
+  "stresses": [
+   "lower_back"
+  ],
+  "muscle": "posterior",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Feet hip width apart with the bar over your mid foot.",
+    "video_id": "XxWcirHIwVo",
+    "seconds": 185
+   },
+   {
+    "text": "Push your hips back with straight arms, then bend your knees to bring your shins to the bar.",
+    "video_id": "XxWcirHIwVo",
+    "seconds": 135
+   },
+   {
+    "text": "Take a big breath and brace before you pull.",
+    "video_id": "XxWcirHIwVo",
+    "seconds": 240
+   },
+   {
+    "text": "Push the floor away: hips and chest rise at the same rate.",
+    "video_id": "XxWcirHIwVo",
+    "seconds": 312
+   }
+  ]
+ },
+ {
+  "id": "rdl",
+  "name": "Romanian deadlift",
+  "video_id": "_oyxCn2iSjU",
+  "demo_seconds": 67,
+  "slots": {
+   "hinge": 2
+  },
+  "equipment": [
+   "gym",
+   "dumbbells"
+  ],
+  "stresses": [
+   "lower_back"
+  ],
+  "muscle": "posterior",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Keep your spine extended the whole time.",
+    "video_id": "_oyxCn2iSjU",
+    "seconds": 150
+   },
+   {
+    "text": "Keep a slight bend in the knees, without letting them travel forward.",
+    "video_id": "_oyxCn2iSjU",
+    "seconds": 164
+   },
+   {
+    "text": "Only go down as far as you can push your hips back without rounding your back.",
+    "video_id": "_oyxCn2iSjU",
+    "seconds": 185
+   }
+  ]
+ },
+ {
+  "id": "single_leg_rdl",
+  "name": "Single leg Romanian deadlift",
+  "video_id": "jVabPEjDCHY",
+  "demo_seconds": 306,
+  "slots": {
+   "hinge": 3
+  },
+  "equipment": [
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [
+   "lower_back"
+  ],
+  "muscle": "posterior",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Keep the standing leg fairly straight.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 333
+   },
+   {
+    "text": "Bend over at the hips with a neutral back.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 334
+   },
+   {
+    "text": "Use a split stance for more balance if you need it.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 378
+   }
+  ]
+ },
+ {
+  "id": "hip_thrust",
+  "name": "Hip thrust",
+  "video_id": "xDmFkJxPzeM",
+  "demo_seconds": 126,
+  "slots": {
+   "glutes": 1,
+   "hinge": 4
+  },
+  "equipment": [
+   "gym",
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "glutes",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Bar centered on your hips, upper back against the bench, feet a bit wider than shoulders.",
+    "video_id": "xDmFkJxPzeM",
+    "seconds": 146
+   },
+   {
+    "text": "At the top, squeeze your glutes as hard as you can, chin and ribs tucked down.",
+    "video_id": "xDmFkJxPzeM",
+    "seconds": 192
+   },
+   {
+    "text": "At the top, your hips are level with or above your knees.",
+    "video_id": "xDmFkJxPzeM",
+    "seconds": 289
+   },
+   {
+    "text": "Do not arch your lower back: tuck your pelvis by crunching your abs slightly at the top.",
+    "video_id": "xDmFkJxPzeM",
+    "seconds": 298
+   }
+  ]
+ },
+ {
+  "id": "split_squat",
+  "name": "Bulgarian split squat",
+  "video_id": "jVabPEjDCHY",
+  "demo_seconds": 245,
+  "slots": {
+   "lunge": 1
+  },
+  "equipment": [
+   "gym",
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [
+   "knees"
+  ],
+  "muscle": "quads",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Drop your back knee toward the floor, then push up with the front leg.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 197
+   },
+   {
+    "text": "Keep your torso upright to work the quads.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 266
+   },
+   {
+    "text": "Raising the back foot puts more of the load on the front leg.",
+    "video_id": "jVabPEjDCHY",
+    "seconds": 286
+   }
+  ]
+ },
+ {
+  "id": "bench_press",
+  "name": "Bench press",
+  "video_id": "4Y2ZdHCOXok",
+  "demo_seconds": 20,
+  "slots": {
+   "horizontal_push": 1
+  },
+  "equipment": [
+   "gym"
+  ],
+  "stresses": [
+   "shoulders"
+  ],
+  "muscle": "chest",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Wrap your thumb around the bar, no thumbless grip.",
+    "video_id": "4Y2ZdHCOXok",
+    "seconds": 83
+   },
+   {
+    "text": "Plant your feet and keep a slight arch in your upper back.",
+    "video_id": "4Y2ZdHCOXok",
+    "seconds": 131
+   },
+   {
+    "text": "Pull the bar down to your lower chest with your back muscles, do not let gravity drop it.",
+    "video_id": "4Y2ZdHCOXok",
+    "seconds": 257
+   },
+   {
+    "text": "Keep your elbows tucked at about 45 to 70 degrees from your body.",
+    "video_id": "4Y2ZdHCOXok",
+    "seconds": 288
+   }
+  ]
+ },
+ {
+  "id": "push_up",
+  "name": "Push up",
+  "video_id": "MO10KOoQx5E",
+  "demo_seconds": 20,
+  "slots": {
+   "horizontal_push": 2
+  },
+  "equipment": [
+   "gym",
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "chest",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Hands about shoulder width or narrower, elbows tucked in instead of flared out.",
+    "video_id": "MO10KOoQx5E",
+    "seconds": 114
+   },
+   {
+    "text": "Keep your elbows below 60 degrees from your body, ideally about 45, to protect the shoulders.",
+    "video_id": "MO10KOoQx5E",
+    "seconds": 157
+   },
+   {
+    "text": "Keep your hands straight, not turned in or out.",
+    "video_id": "MO10KOoQx5E",
+    "seconds": 182
+   },
+   {
+    "text": "Slow down: about 2.5 seconds per push up.",
+    "video_id": "MO10KOoQx5E",
+    "seconds": 498
+   }
+  ]
+ },
+ {
+  "id": "overhead_press",
+  "name": "Overhead press",
+  "video_id": "_RlRDWO2jfg",
+  "demo_seconds": 20,
+  "slots": {
+   "vertical_push": 1
+  },
+  "equipment": [
+   "gym",
+   "dumbbells"
+  ],
+  "stresses": [
+   "shoulders",
+   "lower_back"
+  ],
+  "muscle": "shoulders",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Grip slightly wider than shoulder width, elbows under the bar.",
+    "video_id": "_RlRDWO2jfg",
+    "seconds": 126
+   },
+   {
+    "text": "Press the bar straight up, not up and forward or backward.",
+    "video_id": "_RlRDWO2jfg",
+    "seconds": 204
+   },
+   {
+    "text": "Squeeze your glutes to keep your spine neutral.",
+    "video_id": "_RlRDWO2jfg",
+    "seconds": 190
+   },
+   {
+    "text": "With dumbbells, use the full range of motion and no bouncing reps.",
+    "video_id": "_RlRDWO2jfg",
+    "seconds": 323
+   }
+  ]
+ },
+ {
+  "id": "pike_push_up",
+  "name": "Pike push up",
+  "video_id": "95846CBGU0M",
+  "demo_seconds": 305,
+  "slots": {
+   "vertical_push": 2
+  },
+  "equipment": [
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [
+   "shoulders"
+  ],
+  "muscle": "shoulders",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "From a push up position, walk your hands toward your feet until your body is an upside down V.",
+    "video_id": "95846CBGU0M",
+    "seconds": 311
+   },
+   {
+    "text": "Keep your elbows tucked and forearms vertical over your wrists.",
+    "video_id": "95846CBGU0M",
+    "seconds": 344
+   },
+   {
+    "text": "To make it harder, raise your feet on a step.",
+    "video_id": "95846CBGU0M",
+    "seconds": 350
+   }
+  ]
+ },
+ {
+  "id": "pull_up",
+  "name": "Pull up",
+  "video_id": "D-TL5hDQucI",
+  "demo_seconds": 20,
+  "slots": {
+   "vertical_pull": 1
+  },
+  "equipment": [
+   "gym"
+  ],
+  "stresses": [],
+  "muscle": "back",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Use a medium grip, about 1.5 times shoulder width.",
+    "video_id": "D-TL5hDQucI",
+    "seconds": 132
+   },
+   {
+    "text": "Brace your core so your lower back does not arch and your ribs do not flare.",
+    "video_id": "D-TL5hDQucI",
+    "seconds": 181
+   },
+   {
+    "text": "At the top, do not let your shoulders shrug up to your ears.",
+    "video_id": "D-TL5hDQucI",
+    "seconds": 240
+   }
+  ]
+ },
+ {
+  "id": "lat_pulldown",
+  "name": "Lat pulldown",
+  "video_id": "b_eislFFVhk",
+  "demo_seconds": 60,
+  "slots": {
+   "vertical_pull": 2
+  },
+  "equipment": [
+   "gym"
+  ],
+  "stresses": [],
+  "muscle": "back",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Use a narrow, underhand grip and keep your elbows close to your body.",
+    "video_id": "b_eislFFVhk",
+    "seconds": 76
+   },
+   {
+    "text": "Drive your shoulders down, do not just pull with your arms.",
+    "video_id": "b_eislFFVhk",
+    "seconds": 227
+   },
+   {
+    "text": "Lean back slightly for a deeper stretch.",
+    "video_id": "b_eislFFVhk",
+    "seconds": 300
+   }
+  ]
+ },
+ {
+  "id": "floor_pulldown",
+  "name": "Floor pulldown (home)",
+  "video_id": "95846CBGU0M",
+  "demo_seconds": 365,
+  "slots": {
+   "vertical_pull": 3
+  },
+  "equipment": [
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "back",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Lie on a smooth floor and pull your elbows down to slide your body.",
+    "video_id": "95846CBGU0M",
+    "seconds": 392
+   },
+   {
+    "text": "Put shoes on your hands for grip.",
+    "video_id": "95846CBGU0M",
+    "seconds": 389
+   }
+  ]
+ },
+ {
+  "id": "barbell_row",
+  "name": "Barbell row",
+  "video_id": "kBWAon7ItDw",
+  "demo_seconds": 20,
+  "slots": {
+   "horizontal_pull": 1
+  },
+  "equipment": [
+   "gym"
+  ],
+  "stresses": [
+   "lower_back"
+  ],
+  "muscle": "back",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Keep your back neutral as you lift the bar into position.",
+    "video_id": "kBWAon7ItDw",
+    "seconds": 227
+   },
+   {
+    "text": "Do not pull the bar too high or flare your elbows out.",
+    "video_id": "kBWAon7ItDw",
+    "seconds": 354
+   },
+   {
+    "text": "Lower the weight under control, do not just drop it.",
+    "video_id": "kBWAon7ItDw",
+    "seconds": 423
+   }
+  ]
+ },
+ {
+  "id": "dumbbell_row",
+  "name": "One arm dumbbell row",
+  "video_id": "b_eislFFVhk",
+  "demo_seconds": 364,
+  "slots": {
+   "horizontal_pull": 2
+  },
+  "equipment": [
+   "gym",
+   "dumbbells"
+  ],
+  "stresses": [],
+  "muscle": "back",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Keep your rib cage still, do not twist your torso.",
+    "video_id": "b_eislFFVhk",
+    "seconds": 383
+   },
+   {
+    "text": "Pull your elbow down and back toward your hip.",
+    "video_id": "b_eislFFVhk",
+    "seconds": 410
+   },
+   {
+    "text": "Lean slightly forward and pull from high to low.",
+    "video_id": "b_eislFFVhk",
+    "seconds": 435
+   }
+  ]
+ },
+ {
+  "id": "inverted_row",
+  "name": "Inverted row (home)",
+  "video_id": "95846CBGU0M",
+  "demo_seconds": 243,
+  "slots": {
+   "horizontal_pull": 3
+  },
+  "equipment": [
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "back",
+  "compound": true,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Use a broom or mop across two chairs as the bar.",
+    "video_id": "95846CBGU0M",
+    "seconds": 272
+   },
+   {
+    "text": "Bend your knees to make it easier.",
+    "video_id": "95846CBGU0M",
+    "seconds": 278
+   },
+   {
+    "text": "Raise your feet to make it harder.",
+    "video_id": "95846CBGU0M",
+    "seconds": 303
+   }
+  ]
+ },
+ {
+  "id": "incline_curl",
+  "name": "Incline dumbbell curl",
+  "video_id": "WvlDMlMx1Ok",
+  "demo_seconds": 84,
+  "slots": {
+   "biceps": 1
+  },
+  "equipment": [
+   "gym",
+   "dumbbells"
+  ],
+  "stresses": [],
+  "muscle": "biceps",
+  "compound": false,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Sit back on an incline bench and let your arms hang behind your body for a bigger stretch.",
+    "video_id": "WvlDMlMx1Ok",
+    "seconds": 99
+   }
+  ]
+ },
+ {
+  "id": "home_curl",
+  "name": "Bodyweight curl (home)",
+  "video_id": "95846CBGU0M",
+  "demo_seconds": 426,
+  "slots": {
+   "biceps": 2
+  },
+  "equipment": [
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "biceps",
+  "compound": false,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Lean back with your body straight and elbows locked in place, then curl your hands toward your face.",
+    "video_id": "95846CBGU0M",
+    "seconds": 417
+   }
+  ]
+ },
+ {
+  "id": "overhead_triceps",
+  "name": "Overhead triceps extension",
+  "video_id": "WvlDMlMx1Ok",
+  "demo_seconds": 576,
+  "slots": {
+   "triceps": 1
+  },
+  "equipment": [
+   "gym",
+   "dumbbells"
+  ],
+  "stresses": [],
+  "muscle": "triceps",
+  "compound": false,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Work with your arm overhead: it stretches the long head, and overhead extensions grew the triceps more than pushdowns.",
+    "video_id": "WvlDMlMx1Ok",
+    "seconds": 443
+   },
+   {
+    "text": "Keep your elbow propped up in the overhead position.",
+    "video_id": "WvlDMlMx1Ok",
+    "seconds": 517
+   },
+   {
+    "text": "Choose the version that feels easy on your elbows and shoulders.",
+    "video_id": "WvlDMlMx1Ok",
+    "seconds": 593
+   }
+  ]
+ },
+ {
+  "id": "home_triceps",
+  "name": "Bodyweight triceps extension (home)",
+  "video_id": "95846CBGU0M",
+  "demo_seconds": 426,
+  "slots": {
+   "triceps": 2
+  },
+  "equipment": [
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "triceps",
+  "compound": false,
+  "unit": "reps",
+  "cues": [
+   {
+    "text": "Keep your elbows locked in place and your body in a straight line.",
+    "video_id": "95846CBGU0M",
+    "seconds": 434
+   },
+   {
+    "text": "Make it harder by leaning your body more horizontal.",
+    "video_id": "95846CBGU0M",
+    "seconds": 443
+   }
+  ]
+ },
+ {
+  "id": "plank",
+  "name": "Plank",
+  "video_id": "A2b2EmIg0dA",
+  "demo_seconds": 10,
+  "slots": {
+   "core": 1
+  },
+  "equipment": [
+   "gym",
+   "dumbbells",
+   "bodyweight"
+  ],
+  "stresses": [],
+  "muscle": "core",
+  "compound": false,
+  "unit": "hold",
+  "cues": [
+   {
+    "text": "Tuck your tailbone under and squeeze your glutes.",
+    "video_id": "A2b2EmIg0dA",
+    "seconds": 39
+   },
+   {
+    "text": "Gently pull your elbows back toward your toes: you should feel your abs switch on.",
+    "video_id": "A2b2EmIg0dA",
+    "seconds": 62
+   },
+   {
+    "text": "Stack your shoulders over your elbows.",
+    "video_id": "A2b2EmIg0dA",
+    "seconds": 69
+   }
+  ]
+ }
+]

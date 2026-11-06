@@ -137,3 +137,19 @@
   .send-btn { width: 40px; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .icon-btn.recording { animation: none; } }
+
+/* ---------- weekly plan entry points ---------- */
+.msg-bot:has(.plan) { width: 100%; }
+.plan-cta {
+  width: 100%; display: flex; gap: var(--s-100); align-items: center; text-align: left; margin-top: var(--s-200);
+  padding: var(--s-200); border-radius: var(--r-xl); border: 1px solid var(--accent); background: var(--raised); color: var(--text);
+  transition: background-color var(--t-hover) var(--ease), transform var(--t-hover) var(--ease);
+}
+.plan-cta > span:last-child { display: flex; flex-direction: column; gap: var(--s-25); }
+.plan-cta:hover { background: var(--surface-2); }
+.plan-cta:active { transform: scale(0.98); }
+.plan-cta-icon {
+  display: inline-grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: var(--r-lg); background: var(--accent); color: var(--on-accent);
+}
+@media (max-width: 767px) { .plan-btn-label { display: none; } }

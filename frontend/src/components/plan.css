@@ -1,0 +1,122 @@
+/* Weekly plan: card in the chat and the "Create my plan" dialog. Values from tokens.css only. */
+
+/* ---------- plan card (inside a bot message: message padding 16 -> card radius 12) ---------- */
+.plan {
+  display: flex; flex-direction: column; gap: var(--s-200);
+  margin-top: var(--s-200); padding: var(--s-200); border-radius: var(--r-xl);
+  border: 1px solid var(--border); background: var(--raised);
+}
+.plan-head { display: flex; flex-direction: column; gap: var(--s-75); }
+.plan-head .eyebrow { display: inline-flex; align-items: center; gap: var(--s-50); }
+.plan-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-50); }
+.plan-chips li { padding: var(--s-25) var(--s-75); border-radius: var(--r-full); background: var(--surface-2); color: var(--muted); }
+
+.plan-tabs { display: flex; flex-wrap: wrap; gap: var(--s-50); }
+.plan-tab {
+  padding: var(--s-50) var(--s-100); border-radius: var(--r-full); border: 1px solid var(--border);
+  background: none; color: var(--muted);
+  transition: background-color var(--t-hover) var(--ease), color var(--t-hover) var(--ease), transform var(--t-hover) var(--ease);
+}
+.plan-tab:hover { color: var(--text); background: var(--surface-2); }
+.plan-tab:active { transform: scale(0.98); }
+.plan-tab[aria-selected='true'] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.plan-day { display: flex; flex-direction: column; gap: var(--s-100); }
+.plan-day-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-75); }
+.plan-day-head span { display: inline-flex; align-items: center; gap: var(--s-25); }
+.plan-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-75); }
+
+.plan-exercise { border-radius: var(--r-lg); border: 1px solid var(--border); background: var(--surface); }
+.plan-exercise summary {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s-25) var(--s-100);
+  padding: var(--s-100); cursor: pointer; list-style: none; border-radius: var(--r-lg);
+}
+.plan-exercise summary::-webkit-details-marker { display: none; }
+.plan-index {
+  grid-row: span 2; display: inline-grid; place-items: center; width: 24px; height: 24px;
+  border-radius: var(--r-full); background: var(--surface-2);
+}
+.plan-dose { color: var(--accent-ink); }
+.plan-rest { grid-column: 2; }
+.plan-toggle { grid-column: 3; justify-self: end; color: var(--muted); transition: color var(--t-hover) var(--ease); }
+.plan-exercise summary:hover .plan-toggle { color: var(--text); }
+.plan-exercise[open] .plan-toggle { color: var(--accent-ink); }
+
+.plan-howto { display: flex; flex-direction: column; gap: var(--s-200); padding: 0 var(--s-100) var(--s-100); }
+.plan-media { display: grid; gap: var(--s-100); }
+@media (min-width: 640px) { .plan-media { grid-template-columns: 1fr 1fr; align-items: start; } }
+.plan-cues { margin: 0; padding-left: var(--s-300); display: flex; flex-direction: column; gap: var(--s-75); }
+.plan-cues .cite, .plan-why .cite { margin-left: var(--s-25); vertical-align: 1px; }
+
+.plan-why summary { display: inline-flex; align-items: center; gap: var(--s-50); cursor: pointer; color: var(--muted); border-radius: var(--r); }
+.plan-why summary:hover { color: var(--text); }
+.plan-why ul { margin: var(--s-100) 0 0; padding-left: var(--s-300); display: flex; flex-direction: column; gap: var(--s-75); }
+.plan-note { list-style: none; margin-left: calc(var(--s-300) * -1); display: flex; gap: var(--s-75); color: var(--muted); }
+.plan-note svg { flex-shrink: 0; margin-top: var(--s-25); }
+
+/* ---------- diagram ---------- */
+.diagram { margin: 0; display: flex; flex-direction: column; gap: var(--s-50); }
+.diagram-poses { display: flex; gap: var(--s-75); }
+.diagram-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--s-25); padding: var(--s-75); border-radius: var(--r-md); background: var(--surface-2); }
+.pose { width: 100%; max-width: 160px; height: auto; display: block; }
+.pose-floor { stroke: var(--border); stroke-width: 1.5; }
+.pose-limb { stroke: var(--text); stroke-width: 4; stroke-linecap: round; }
+.pose-limb-back { stroke: var(--muted); stroke-width: 4; stroke-linecap: round; }
+.pose-prop { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; opacity: 0.6; }
+.pose-prop-fill { fill: var(--border); }
+.pose-head { fill: var(--text); }
+.pose-plate { fill: var(--accent); opacity: 0.55; }
+.pose-weight { fill: var(--accent-2); }
+
+/* ---------- video demo (thumbnail first, player on click) ---------- */
+.video-demo {
+  position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; border: none;
+  border-radius: var(--r-md); overflow: hidden; background: #000000;
+}
+.video-demo iframe { width: 100%; height: 100%; border: 0; display: block; }
+.video-demo-poster img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform var(--t-layout) var(--ease); }
+.video-demo-poster:hover img { transform: scale(1.03); }
+.video-demo-play {
+  position: absolute; inset: 0; margin: auto; width: 48px; height: 48px; display: grid; place-items: center;
+  border-radius: var(--r-full); background: var(--accent); color: var(--on-accent);
+  transition: transform var(--t-hover) var(--ease);
+}
+.video-demo-poster:hover .video-demo-play { transform: scale(1.06); }
+.video-demo-label {
+  position: absolute; left: var(--s-75); bottom: var(--s-75); padding: var(--s-25) var(--s-75);
+  border-radius: var(--r); background: rgb(0 0 0 / 0.75); color: #ffffff;
+}
+
+/* ---------- create plan dialog ---------- */
+.plan-dialog {
+  width: min(560px, calc(100% - var(--s-400))); max-height: calc(100dvh - var(--s-400)); padding: 0;
+  border: 1px solid var(--border); border-radius: var(--r-2xl); background: var(--surface); color: var(--text);
+  box-shadow: var(--shadow);
+}
+.plan-dialog[open] { animation: dialog-in var(--t-layout) var(--ease); }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(var(--s-200)); } }
+.plan-dialog::backdrop { background: rgb(0 0 0 / 0.5); backdrop-filter: blur(4px); }
+.plan-dialog form { display: flex; flex-direction: column; max-height: inherit; }
+.plan-dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-200); padding: var(--s-300) var(--s-300) var(--s-100); }
+.plan-dialog-body { display: flex; flex-direction: column; gap: var(--s-200); padding: var(--s-100) var(--s-300); overflow-y: auto; }
+.plan-dialog-foot { display: flex; justify-content: flex-end; gap: var(--s-75); padding: var(--s-200) var(--s-300) var(--s-300); }
+
+.choice { margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: var(--s-75); }
+.choice legend { padding: 0; margin-bottom: var(--s-75); }
+.choice-options { display: flex; flex-wrap: wrap; gap: var(--s-75); }
+.choice-option { position: relative; cursor: pointer; }
+.choice-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.choice-option span {
+  display: inline-block; padding: var(--s-75) var(--s-100); border-radius: var(--r-lg);
+  border: 1px solid var(--border); background: var(--raised); color: var(--text);
+  transition: background-color var(--t-hover) var(--ease), border-color var(--t-hover) var(--ease), transform var(--t-hover) var(--ease);
+}
+.choice-option:hover span { border-color: var(--muted); }
+.choice-option:active span { transform: scale(0.98); }
+.choice-option input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.choice-option input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { .plan-dialog[open] { animation: none; } }
+@media print {
+  .plan-tabs, .plan-toggle, .video-demo { display: none; }
+}

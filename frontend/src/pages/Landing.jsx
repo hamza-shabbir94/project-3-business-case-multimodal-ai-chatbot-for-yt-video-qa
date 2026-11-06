@@ -1,5 +1,5 @@
 import {
-  ArrowRight, ChatsCircle, CheckCircle, ClockCounterClockwise, Lightning, ListChecks,
+  ArrowRight, CalendarPlus, ChatsCircle, CheckCircle, ClockCounterClockwise, Lightning, ListChecks,
   MagnifyingGlass, Microphone, Play, ShieldCheck, XCircle,
 } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
@@ -18,8 +18,9 @@ const CHAT_URL = '/chat/'
 // "The Smartest Way To Use Protein To Build Muscle" (Jeff Nippard), Pok0Jg2JAkE.
 const PROTEIN_VIDEO = 'https://www.youtube.com/watch?v=Pok0Jg2JAkE'
 
-// Real lengths (seconds) of the 18 videos, from backend/data, grouped by topic (README table)
-const TRAINING = [1315, 260, 1069, 323, 661, 620, 734, 435, 483, 484, 458]
+// Real lengths (seconds) of the 32 videos, from backend/data, grouped by topic (README table)
+const TRAINING = [1315, 260, 1069, 323, 661, 620, 734, 435, 483, 484, 458,
+  478, 570, 502, 619, 381, 432, 589, 531, 526, 618, 239, 695, 718, 787]
 const NUTRITION_RECOVERY = [620, 932, 357, 402, 506, 434, 654]
 const LONGEST = Math.max(...TRAINING, ...NUTRITION_RECOVERY)
 
@@ -53,10 +54,10 @@ function LibraryCard() {
   return (
     <div className="glass-card">
       <div className="glass-head">
-        <h2 className="title-4 glass-title">3 hours, indexed</h2>
-        <span className="glass-badge caption-3 mono">179 min</span>
+        <h2 className="title-4 glass-title">5 hours, indexed</h2>
+        <span className="glass-badge caption-3 mono">307 min</span>
       </div>
-      <div className="bars" role="img" aria-label="Lengths of the 18 videos: 11 on training, 7 on nutrition and recovery">
+      <div className="bars" role="img" aria-label="Lengths of the 32 videos: 25 on training and technique, 7 on nutrition and recovery">
         {bars.map((b, i) => (
           <span
             key={i}
@@ -114,13 +115,13 @@ function Hero() {
             Get the answer<br /> without watching<br /> the whole video
           </h1>
           <p className="hero-sub body-3 md-title-1">
-            Ask about 18 fitness videos on YouTube, about 3 hours of training, nutrition and recovery
-            advice. Every answer cites the video and the minute it comes from.
+            Ask about 32 fitness videos on YouTube, about 5 hours of training, nutrition and recovery
+            advice, or get a weekly plan built for you. Every answer cites the video and the minute it comes from.
           </p>
           <Cta />
           <p className="hero-proof caption-2">
             Built on videos from Jeff Nippard, Jeremy Ethier, Institute of Human Anatomy,
-            Precision Nutrition and 4 more channels.
+            Precision Nutrition and 5 more channels.
           </p>
         </div>
 
@@ -194,6 +195,7 @@ const BENEFITS = [
   { icon: Microphone, title: 'Ask by typing or talking', text: 'Press the microphone, speak, check the text, send. Useful between sets.' },
   { icon: ClockCounterClockwise, title: 'Follow up like a conversation', text: 'It remembers the chat, so “and how much of that per meal?” just works. A reload keeps it.' },
   { icon: ListChecks, title: 'Full routines, not fragments', text: 'Ask for a summary and it reads the whole video, so a warm up comes back with every set and rest time.' },
+  { icon: CalendarPlus, title: 'A weekly plan made for you', text: 'Pick your goal, days, equipment and anything that hurts. Every exercise comes with a diagram, form cues and a video demo.' },
   { icon: ShieldCheck, title: 'Honest about the gaps', text: 'If the videos do not cover a topic, it says so instead of guessing.' },
 ]
 
@@ -231,7 +233,7 @@ function Tagline() {
 
 const STEPS = [
   { icon: ChatsCircle, title: 'Ask', text: 'Type or speak a question about training, nutrition or recovery.' },
-  { icon: MagnifyingGlass, title: 'It searches', text: 'An AI agent finds the most relevant minutes across 295 passages from the 18 transcripts.' },
+  { icon: MagnifyingGlass, title: 'It searches', text: 'An AI agent finds the most relevant minutes across 510 passages from the 32 transcripts.' },
   { icon: Play, title: 'Read and check', text: 'You get a short answer with timestamp buttons that open YouTube at that second.' },
 ]
 
@@ -290,7 +292,7 @@ const STATS = [
   { value: '11 of 12', label: 'test questions found the right video as the first result' },
   { value: '12 of 12', label: 'found it in the top two results' },
   { value: '16 of 16', label: 'automated API tests pass' },
-  { value: '295', label: 'searchable passages from 179 minutes of video' },
+  { value: '510', label: 'searchable passages from 307 minutes of video' },
 ]
 
 function Proof() {
@@ -328,7 +330,7 @@ function Videos() {
     <Band id="videos" label="videos-title">
       <SectionHead
         eyebrow="The library" id="videos-title" title="What it has watched for you"
-        text="18 videos from 8 channels. Ask about any of them, or about all of them at once."
+        text="32 videos from 9 channels. Ask about any of them, or about all of them at once."
       />
       {error && <p className="inline-error body-6" role="alert">{error}</p>}
       <ul className="video-grid" aria-busy={!videos && !error}>

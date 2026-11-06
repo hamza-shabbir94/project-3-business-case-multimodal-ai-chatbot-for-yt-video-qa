@@ -33,6 +33,13 @@ describe('linkCitations', () => {
     expect(linkCitations('[Other Video, 2:00]', sources, [])).toContain('watch?v=zzz&t=120s')
   })
 
+  it('splits two citations joined in one bracket', () => {
+    const out = linkCitations('x [Strength, Size and You, 0:10; How to PROPERLY Squat for Growth (4 Easy Steps), 3:25]', [], videos)
+    expect(out).toContain('(https://www.youtube.com/watch?v=abc&t=10s')
+    expect(out).toContain('(https://www.youtube.com/watch?v=gcNh17Ckjgg&t=205s')
+    expect(out).not.toContain(';')
+  })
+
   it('keeps unknown titles and normal brackets unchanged', () => {
     expect(linkCitations('[Unknown, 1:00] and [note]', [], videos)).toBe('[Unknown, 1:00] and [note]')
   })

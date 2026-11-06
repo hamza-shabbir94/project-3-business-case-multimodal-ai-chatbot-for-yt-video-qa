@@ -6,6 +6,7 @@
              list_videos     : the videos in the knowledge base
              video_info      : title, channel, length, upload date, link of one video
              summarize_video : summary of one whole video, with timestamps
+             create_weekly_plan : a weekly workout plan from goal, days, level, equipment (planner.py)
         -> answer with [Video title, m:ss] citations
 
 Memory: every message of a thread is saved by a LangGraph checkpointer under its
@@ -24,6 +25,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 
 from catalog import find_video, load_videos, transcript_with_timestamps, video_summary_line
+from planner import AVOID, EQUIPMENT, EXPERIENCE, GOALS, build_plan, plan_as_text
 from rag import DEFAULT_K, LLM_MODEL, format_docs, get_sources
 from vectorstore import get_vectorstore
 
@@ -34,6 +36,11 @@ Tools:
 - list_videos: use it when the user asks which videos or topics you know.
 - video_info: details about one video (channel, length, upload date, link).
 - summarize_video: when the user asks for a summary, the main points, or all the steps of a routine from one video. It reads the whole transcript, so nothing is missed.
+- create_weekly_plan: when the user asks for a workout plan, routine or schedule for the week, or wants to change one ("only 3 days", "my knee hurts", "no gym"). If goal or days per week are missing, ask for them in one short question. Assume beginner, full gym and 60 minutes when not given. To change a plan, call it again with the earlier inputs plus the change.
+
+Plans:
+- The app shows the full plan as a card with every exercise, form cues and a video demo. Do not repeat the plan. Reply in 2 to 4 sentences: the split, why it fits the user, and one tip from the plan rules with its citation tag.
+- If the user mentions pain or an injury, use avoid, and say they should see a physiotherapist or doctor.
 
 Rules:
 - Answer ONLY from tool results. If they do not contain the answer, say that the videos don't cover it. Do not use outside knowledge.
@@ -131,7 +138,28 @@ def summarize_video(video: str, focus: str | None = None) -> tuple[str, list[dic
     return summary, sources
 
 
-TOOLS = [search_videos, list_videos, video_info, summarize_video]
+@tool(response_format="content_and_artifact")
+def create_weekly_plan(goal: str, days_per_week: int, experience: str = "beginner", equipment: str = "gym",
+                       session_minutes: int = 60, avoid: list[str] | None = None) -> tuple[str, dict]:
+    """Build a weekly workout plan from the programming rules and exercise demos in the videos.
+
+    Args:
+        goal: one of build_muscle, get_stronger, lose_fat, general_fitness.
+        days_per_week: training days, 2 to 6.
+        experience: beginner or intermediate.
+        equipment: gym, dumbbells (at home) or bodyweight.
+        session_minutes: time per workout, 20 to 120.
+        avoid: body parts to spare because of pain or injury: knees, lower_back, shoulders.
+    """
+    try:
+        plan = build_plan(goal, days_per_week, experience, equipment, session_minutes, avoid)
+    except ValueError:
+        return (f"Unknown value. goal: {', '.join(GOALS)}; experience: {', '.join(EXPERIENCE)}; "
+                f"equipment: {', '.join(EQUIPMENT)}; avoid: {', '.join(AVOID)}."), {}
+    return plan_as_text(plan), {"plan": plan}
+
+
+TOOLS = [search_videos, list_videos, video_info, summarize_video, create_weekly_plan]
 
 
 def get_checkpointer():
@@ -159,18 +187,21 @@ def build_agent(checkpointer=None):
 
 
 def _summarize_turn(turn: list) -> dict:
-    """The messages after one user message -> {answer, sources, tools_used}."""
-    sources, seen, tools_used = [], set(), []
+    """The messages after one user message -> {answer, sources, tools_used, plan}."""
+    sources, seen, tools_used, plan = [], set(), [], None
     for m in turn:
         if isinstance(m, AIMessage):
             tools_used += [c["name"] for c in m.tool_calls]
+        if isinstance(m, ToolMessage) and isinstance(m.artifact, dict):
+            plan = m.artifact.get("plan") or plan  # the last plan of the turn wins
+            continue
         if isinstance(m, ToolMessage) and m.artifact:
             for s in m.artifact:
                 if s["url"] not in seen:
                     seen.add(s["url"])
                     sources.append(s)
     answer = turn[-1].content if turn and isinstance(turn[-1], AIMessage) else ""
-    return {"answer": answer, "sources": sources, "tools_used": tools_used}
+    return {"answer": answer, "sources": sources, "tools_used": tools_used, "plan": plan}
 
 
 def ask(agent, question: str, thread_id: str) -> dict:

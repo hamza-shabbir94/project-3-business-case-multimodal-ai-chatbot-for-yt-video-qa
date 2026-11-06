@@ -2,7 +2,7 @@
 
     GET  /api/health                health check (no API calls)
     GET  /api/videos                the videos in the knowledge base
-    POST /api/chat                  {message, thread_id?} -> {answer, sources, tools_used, thread_id}
+    POST /api/chat                  {message, thread_id?} -> {answer, sources, tools_used, plan?, thread_id}
     GET  /api/history/{thread_id}   all turns of a saved conversation
     POST /api/transcribe            audio file -> text (OpenAI Whisper API), for voice questions
 
@@ -58,6 +58,52 @@ class Source(BaseModel):
     url: str = Field(description="YouTube link that starts at the timestamp")
 
 
+class Cue(BaseModel):
+    text: str
+    source: Source
+
+
+class PlanExercise(BaseModel):
+    id: str = Field(description="Exercise ID, also used for its diagram")
+    name: str
+    muscle: str
+    sets: int
+    reps: str = Field(examples=["8 to 12"])
+    rest_seconds: int
+    demo: Source = Field(description="Where the exercise is demonstrated in a video")
+    cues: list[Cue]
+
+
+class PlanDay(BaseModel):
+    day: int
+    name: str
+    minutes: int = Field(description="Estimated length including a 5 minute warm up")
+    exercises: list[PlanExercise]
+
+
+class PlanInputs(BaseModel):
+    goal: str
+    days: int
+    experience: str
+    equipment: str
+    minutes: int
+    avoid: list[str]
+
+
+class PlanRule(BaseModel):
+    text: str
+    source: Source
+
+
+class Plan(BaseModel):
+    inputs: PlanInputs
+    split: str
+    weekly_sets_per_muscle: int
+    days: list[PlanDay]
+    rules: list[PlanRule]
+    notes: list[str]
+
+
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS, examples=["How deep should I squat?"])
     thread_id: str | None = Field(default=None, pattern=THREAD_ID_PATTERN,
@@ -68,6 +114,7 @@ class ChatResponse(BaseModel):
     answer: str
     sources: list[Source]
     tools_used: list[str]
+    plan: Plan | None = Field(default=None, description="Set when the agent built a weekly workout plan")
     thread_id: str
 
 
@@ -76,6 +123,7 @@ class Turn(BaseModel):
     answer: str
     sources: list[Source]
     tools_used: list[str]
+    plan: Plan | None = None
 
 
 class HistoryResponse(BaseModel):

@@ -232,6 +232,17 @@
             "type": "array",
             "title": "Tools Used"
           },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Plan"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the agent built a weekly workout plan"
+          },
           "thread_id": {
             "type": "string",
             "title": "Thread Id"
@@ -245,6 +256,23 @@
           "thread_id"
         ],
         "title": "ChatResponse"
+      },
+      "Cue": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "source"
+        ],
+        "title": "Cue"
       },
       "HTTPValidationError": {
         "properties": {
@@ -279,6 +307,197 @@
           "turns"
         ],
         "title": "HistoryResponse"
+      },
+      "Plan": {
+        "properties": {
+          "inputs": {
+            "$ref": "#/components/schemas/PlanInputs"
+          },
+          "split": {
+            "type": "string",
+            "title": "Split"
+          },
+          "weekly_sets_per_muscle": {
+            "type": "integer",
+            "title": "Weekly Sets Per Muscle"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/PlanDay"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PlanRule"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inputs",
+          "split",
+          "weekly_sets_per_muscle",
+          "days",
+          "rules",
+          "notes"
+        ],
+        "title": "Plan"
+      },
+      "PlanDay": {
+        "properties": {
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "minutes": {
+            "type": "integer",
+            "title": "Minutes",
+            "description": "Estimated length including a 5 minute warm up"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/PlanExercise"
+            },
+            "type": "array",
+            "title": "Exercises"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "name",
+          "minutes",
+          "exercises"
+        ],
+        "title": "PlanDay"
+      },
+      "PlanExercise": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Exercise ID, also used for its diagram"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "muscle": {
+            "type": "string",
+            "title": "Muscle"
+          },
+          "sets": {
+            "type": "integer",
+            "title": "Sets"
+          },
+          "reps": {
+            "type": "string",
+            "title": "Reps",
+            "examples": [
+              "8 to 12"
+            ]
+          },
+          "rest_seconds": {
+            "type": "integer",
+            "title": "Rest Seconds"
+          },
+          "demo": {
+            "$ref": "#/components/schemas/Source",
+            "description": "Where the exercise is demonstrated in a video"
+          },
+          "cues": {
+            "items": {
+              "$ref": "#/components/schemas/Cue"
+            },
+            "type": "array",
+            "title": "Cues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "muscle",
+          "sets",
+          "reps",
+          "rest_seconds",
+          "demo",
+          "cues"
+        ],
+        "title": "PlanExercise"
+      },
+      "PlanInputs": {
+        "properties": {
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "experience": {
+            "type": "string",
+            "title": "Experience"
+          },
+          "equipment": {
+            "type": "string",
+            "title": "Equipment"
+          },
+          "minutes": {
+            "type": "integer",
+            "title": "Minutes"
+          },
+          "avoid": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Avoid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goal",
+          "days",
+          "experience",
+          "equipment",
+          "minutes",
+          "avoid"
+        ],
+        "title": "PlanInputs"
+      },
+      "PlanRule": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "source"
+        ],
+        "title": "PlanRule"
       },
       "Source": {
         "properties": {
@@ -348,6 +567,16 @@
             },
             "type": "array",
             "title": "Tools Used"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Plan"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

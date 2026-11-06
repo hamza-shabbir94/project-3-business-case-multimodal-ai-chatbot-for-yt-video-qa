@@ -15,9 +15,16 @@ function findVideoUrl(title, videos, sources) {
   return source ? source.url.replace(/&t=\d+s$/, '') : null
 }
 
+// The model sometimes joins two citations in one bracket: [Title A, 1:00; Title B, 2:00]
+const JOINED = /\[([^[\]]+?,\s*\d{1,2}:\d{2}(?::\d{2})?(?:;\s*[^[\]]+?,\s*\d{1,2}:\d{2}(?::\d{2})?)+)\]/g
+
+function splitJoined(answer) {
+  return answer.replace(JOINED, (match, inner) => inner.split(';').map((part) => `[${part.trim()}]`).join(''))
+}
+
 // Returns markdown where each citation is a link: [▶ 3:25](url&t=205s "Video title")
 export function linkCitations(answer, sources = [], videos = []) {
-  return answer.replace(CITATION, (match, title, timestamp) => {
+  return splitJoined(answer).replace(CITATION, (match, title, timestamp) => {
     const url = findVideoUrl(title, videos, sources)
     if (!url) return match // unknown title: keep the text as it is
     const safeTitle = title.trim().replace(/"/g, "'")

@@ -27,7 +27,7 @@ def test_health():
 
 def test_videos():
     videos = client.get("/api/videos").json()
-    assert len(videos) == 18
+    assert len(videos) == 32
     assert {"video_id", "title", "channel", "duration_seconds", "url", "thumbnail_url"} <= videos[0].keys()
 
 
@@ -99,3 +99,21 @@ def test_chat_new_thread_and_out_of_scope():
 @pytest.mark.live
 def test_unknown_thread_has_empty_history():
     assert client.get(f"/api/history/never-{uuid.uuid4().hex[:8]}").json()["turns"] == []
+
+
+@pytest.mark.live
+def test_chat_builds_and_changes_a_weekly_plan():
+    thread = f"test-{uuid.uuid4().hex[:8]}"
+    first = client.post("/api/chat", json={"thread_id": thread, "message": (
+        "Create my weekly plan. Goal: build muscle. Days per week: 4. Experience: beginner. "
+        "Equipment: full gym. Session length: 60 minutes.")}).json()
+    assert "create_weekly_plan" in first["tools_used"]
+    plan = first["plan"]
+    assert len(plan["days"]) == 4 and plan["inputs"]["avoid"] == []
+    assert all(e["demo"]["url"].startswith("https://www.youtube.com/watch?v=") for d in plan["days"] for e in d["exercises"])
+
+    second = client.post("/api/chat", json={"thread_id": thread, "message": "My knee hurts. Change the plan."}).json()
+    assert second["plan"]["inputs"]["avoid"] == ["knees"]
+    assert second["plan"]["inputs"]["days"] == 4  # earlier inputs kept
+    history = client.get(f"/api/history/{thread}").json()["turns"]
+    assert history[0]["plan"]["split"] == plan["split"]

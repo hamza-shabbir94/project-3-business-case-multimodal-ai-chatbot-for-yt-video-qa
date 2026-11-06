@@ -1,9 +1,10 @@
-import { ChatsCircle, FilmStrip, Plus } from '@phosphor-icons/react'
+import { CalendarPlus, ChatsCircle, FilmStrip, Plus } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { getHistory, getVideos, sendMessage } from './api'
 import Composer from './components/Composer'
 import Message from './components/Message'
 import Nav from './components/Nav'
+import PlanForm from './components/PlanForm'
 import VideoList from './components/VideoList'
 import './App.css'
 
@@ -40,6 +41,7 @@ export default function App() {
   const [threadId, setThreadId] = useState(storage.get)
   const [loading, setLoading] = useState(false)
   const [showVideos, setShowVideos] = useState(false) // only used on small screens
+  const [planOpen, setPlanOpen] = useState(false)
   const endRef = useRef(null)
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function App() {
       .then(({ turns }) =>
         setMessages(turns.flatMap((t) => [
           { role: 'user', text: t.question },
-          { role: 'bot', text: t.answer, sources: t.sources },
+          { role: 'bot', text: t.answer, sources: t.sources, plan: t.plan },
         ])),
       )
       .catch(() => {})
@@ -79,7 +81,7 @@ export default function App() {
         setThreadId(reply.thread_id)
         storage.set(reply.thread_id)
       }
-      setMessages((m) => [...m, { role: 'bot', text: reply.answer, sources: reply.sources }])
+      setMessages((m) => [...m, { role: 'bot', text: reply.answer, sources: reply.sources, plan: reply.plan }])
     } catch (e) {
       setMessages((m) => [...m, { role: 'bot', text: e.message, error: true }])
     } finally {
@@ -119,6 +121,9 @@ export default function App() {
               <p className="caption-5 muted">Answers from the videos, with timestamps</p>
             </div>
             <div className="toolbar-actions">
+              <button type="button" className="btn btn-primary button-sm" onClick={() => setPlanOpen(true)} disabled={loading} aria-label="Create my plan">
+                <CalendarPlus size={16} aria-hidden /> <span className="plan-btn-label">Create my plan</span>
+              </button>
               <button type="button" className="btn btn-secondary button-sm videos-toggle" onClick={() => setShowVideos((s) => !s)}>
                 {showVideos ? <ChatsCircle size={16} aria-hidden /> : <FilmStrip size={16} aria-hidden />}
                 {showVideos ? 'Chat' : 'Videos'}
@@ -138,6 +143,13 @@ export default function App() {
                   Type or use the microphone. Every answer links to the moment in the video it comes from.
                   Start with one of these:
                 </p>
+                <button type="button" className="plan-cta" onClick={() => setPlanOpen(true)}>
+                  <span className="plan-cta-icon" aria-hidden><CalendarPlus size={20} /></span>
+                  <span>
+                    <span className="title-4">Create my weekly plan</span>
+                    <span className="caption-5 muted">Pick your goal, days and equipment. Every exercise comes with a diagram and a video demo.</span>
+                  </span>
+                </button>
                 <div className="examples">
                   {EXAMPLES.map((q) => (
                     <button key={q} type="button" className="example body-6" onClick={() => ask(q)}>{q}</button>
@@ -154,6 +166,11 @@ export default function App() {
           <Composer onSend={ask} disabled={loading} />
         </main>
       </div>
+      <PlanForm
+        open={planOpen}
+        onClose={() => setPlanOpen(false)}
+        onSubmit={(text) => { setPlanOpen(false); ask(text) }}
+      />
     </div>
   )
 }

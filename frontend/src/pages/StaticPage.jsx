@@ -22,7 +22,7 @@ const PAGES = {
     updated: 'November 2026',
     sections: [
       ['What this is', 'Liftline is a student project built for the Ironhack AI Engineering bootcamp. It is free and provided as it is, without any guarantee that it is available or correct.'],
-      ['Not medical advice', 'Answers repeat what 18 public YouTube videos say about training, nutrition and recovery. They are general information. For injuries, health conditions, medication or diets, ask a doctor or a registered dietitian.'],
+      ['Not medical advice', 'Answers repeat what 32 public YouTube videos say about training, nutrition and recovery. They are general information. For injuries, health conditions, medication or diets, ask a doctor or a registered dietitian.'],
       ['Answers can be wrong', 'The bot uses an AI model and automatic captions, and both can make mistakes. Check important facts with the timestamp links before you act on them.'],
       ['Video content', 'The videos and their content belong to their creators. This site links to them on YouTube and quotes short parts of their transcripts to answer questions.'],
       ['Fair use of the service', 'Every question costs the developer API credits. Please do not send automated or bulk requests.'],

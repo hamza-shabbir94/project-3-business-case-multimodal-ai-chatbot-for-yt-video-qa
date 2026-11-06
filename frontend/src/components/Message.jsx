@@ -2,6 +2,7 @@ import { Play, WarningCircle } from '@phosphor-icons/react'
 import { Children } from 'react'
 import Markdown from 'react-markdown'
 import { groupSources, linkCitations } from '../citations'
+import PlanCard from './PlanCard'
 
 // linkCitations() writes links as "▶ 3:25"; here the ▶ becomes a Phosphor icon
 function CitationLink({ href, title, children }) {
@@ -44,7 +45,7 @@ function Sources({ sources }) {
   )
 }
 
-export default function Message({ role, text, sources = [], videos, error }) {
+export default function Message({ role, text, sources = [], plan, videos, error }) {
   if (role === 'user') {
     return <div className="msg msg-user body-6">{text}</div>
   }
@@ -59,6 +60,7 @@ export default function Message({ role, text, sources = [], videos, error }) {
   return (
     <div className="msg msg-bot body-6">
       <Markdown components={{ a: CitationLink }}>{linkCitations(text, sources, videos)}</Markdown>
+      {plan && <PlanCard plan={plan} />}
       <Sources sources={sources} />
     </div>
   )
