@@ -81,23 +81,28 @@ This final project offers an exciting opportunity to explore the intersection of
 
 ---
 
-# Our Implementation: Fitness Video QA Bot
+# Our Implementation: Liftline (Fitness Video QA Bot)
 
-A chatbot that answers questions about **fitness YouTube videos** (strength training, muscle growth, nutrition, recovery). It finds the right part of the right video and cites the timestamp, for example `[0:48]`, with a link that opens the video at that second.
+**Live:** https://fitness-video-qa.vercel.app
+
+A chatbot that answers questions about **fitness YouTube videos** (strength training, muscle growth, nutrition, recovery). It finds the right part of the right video and cites it as `[Video title, m:ss]`, with a link that opens the video at that second. The knowledge base has 32 videos from 9 channels, about 307 minutes.
+
+It also builds a **weekly workout plan** from the user's goal, days per week, experience, equipment, time per workout and painful joints. Every exercise in the plan has a drawn diagram, form cues and a video demo that starts at the right second (see [Feature: weekly workout plan](#feature-weekly-workout-plan)).
 
 ## Tech Stack
 
 | Job | Tool |
 |---|---|
 | Transcripts + metadata | `youtube-transcript-api`, `yt-dlp` (run locally) |
-| Speech to text | Local Hugging Face Whisper (`faster-whisper`) for videos without captions; OpenAI Whisper API for voice questions (planned) |
+| Speech to text | Local Hugging Face Whisper (`faster-whisper`) for videos without captions; OpenAI Whisper API (`whisper-1`) for voice questions |
 | Chunks + documents | LangChain `Document`, custom time-based chunker |
 | Embeddings | OpenAI `text-embedding-3-small` (1536 dims) |
 | Vector database | Pinecone (serverless, cosine) via `langchain-pinecone` |
 | LLM | OpenAI `gpt-4o-mini` |
-| Agent + memory | LangGraph agent + Postgres checkpointer on Neon (planned) |
-| Backend | FastAPI on Vercel (planned) |
-| Frontend | React + Vite on Vercel (planned) |
+| Agent + memory | LangGraph agent (`create_agent`, 5 tools) + Postgres checkpointer on Neon |
+| Weekly plan | Plain Python rules (`planner.py`, no LLM) + exercise catalog (`exercises.json`) |
+| Backend | FastAPI on Vercel |
+| Frontend | React + Vite on Vercel |
 | Tracing + evaluation | LangSmith |
 
 ## Architecture
@@ -115,15 +120,16 @@ PIPELINE 1: INGEST (local scripts, once per video)
                                 index_videos.py: clean -> chunk (~800 chars, keep start time)
                                                  -> OpenAI embeddings -> Pinecone "yt-video-qa"
 
-PIPELINE 2: ASK (Vercel, every question)                        [planned]
+PIPELINE 2: ASK (Vercel, every question)
 
   User ──> React + Vite ──> FastAPI /api/chat ──> LangGraph agent (gpt-4o-mini)
               ^                   │                   │        │
               │            /api/transcribe            │        └── memory: Postgres (Neon)
               │            (voice -> Whisper)         v
               │                                  tools: search_videos ──> Pinecone
-              │                                         list_videos, video_info, summarize
-              └──── answer + [12:41] citations + video links
+              │                                         list_videos, video_info, summarize_video
+              │                                         create_weekly_plan ──> planner.py + exercises.json
+              └──── answer + [Title, 12:41] citations + video links (+ plan card when a plan was built)
 
   LangSmith traces every step and runs the evaluation.
 ```
@@ -152,6 +158,9 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 │   ├── src/content/faq.js    # FAQ text, also written into the landing page as FAQ schema
 │   ├── src/App.jsx           # chat: layout, chat state, thread_id in localStorage, history reload
 │   ├── src/components/       # Message (markdown + citation links), Composer (text + mic), VideoList
+│   │                         # weekly plan: PlanForm (dialog), PlanCard (day tabs, cues, rules),
+│   │                         #   ExerciseDiagram (start/end pose), VideoDemo (player at the demo second)
+│   ├── src/content/poses.js  # joint coordinates for every exercise diagram (+ poses.test.js)
 │   ├── src/citations.js      # [Title, m:ss] -> YouTube link at that second (+ citations.test.js)
 │   ├── src/api.js            # calls to /api/*
 │   └── src/useRecorder.js    # microphone recording (MediaRecorder)
@@ -161,6 +170,7 @@ PIPELINE 2: ASK (Vercel, every question)                        [planned]
 │   ├── index_videos.py       # cleans, chunks, embeds, uploads to Pinecone (Phase 2)
 │   ├── test_rag.py           # runs the test set: retrieval hit@k + answers (Phase 3)
 │   ├── chat.py               # chat with the agent in the terminal, or run the demo (Phase 4)
+│   ├── build_exercises.py    # builds backend/exercises.json: finds the second of every form cue (weekly plan)
 │   ├── videos.txt            # the YouTube links we use
 │   └── requirements.txt      # local tools: yt-dlp, faster-whisper, ...
 ├── eval/
@@ -214,12 +224,13 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 
 # Phase 5: run the API (docs at http://127.0.0.1:8000/docs)
 .venv/bin/uvicorn app:app --app-dir backend --reload
-.venv/bin/pytest backend/tests -m "not live"        # free tests
-.venv/bin/pytest backend/tests                       # + live tests (OpenAI, Pinecone, Neon)
+.venv/bin/pytest backend/tests -m "not live"        # free tests (2,418, includes the plan builder)
+.venv/bin/pytest backend/tests/test_planner.py       # plan builder only (2,405 tests, no API calls)
+.venv/bin/pytest backend/tests                       # + 4 live tests (OpenAI, Pinecone, Neon)
 
 # Phase 6: frontend (start the API first; Vite forwards /api to it)
 cd frontend && npm run dev                           # http://localhost:5173
-cd frontend && npm test                              # citation unit tests
+cd frontend && npm test                              # citation + exercise diagram unit tests (9)
 
 # Phase 4: chat with the agent
 .venv/bin/python scripts/chat.py --demo              # scripted test of all tools + memory
@@ -239,7 +250,11 @@ cd frontend && npm test                              # citation unit tests
 | 5 | FastAPI backend | Done |
 | 6 | React + Vite frontend | Done |
 | 7 | Deploy on Vercel | Done: live at https://fitness-video-qa.vercel.app |
+| Design | Liftline landing page and design system | Done |
+| Feature | Weekly workout plan (14 more videos, plan builder, diagrams, video demos) | Done: live |
 | 8 | Evaluation, docs, slides | Planned |
+
+Phases 1 to 6 were built and tested with the first 18 videos; their results below say "18 videos". The weekly plan feature added 14 videos, so the app now has 32.
 
 ## Phase Details
 
@@ -322,9 +337,12 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 | Tool | What it does | Data |
 |---|---|---|
 | `search_videos(query, video_id?)` | top-6 chunks; with `video_id` only inside one video | Pinecone |
-| `list_videos()` | all 18 videos with channel, length, ID | `backend/data/*.json` |
+| `list_videos()` | every video (now 32) with channel, length, ID | `backend/data/*.json` |
 | `video_info(video)` | channel, length, upload date, link; finds a video by ID or part of its title | `backend/data/*.json` |
 | `summarize_video(video, focus?)` | summary of the whole video, or every step of a routine, with timestamps | full transcript + one extra LLM call |
+| `create_weekly_plan(goal, days_per_week, experience?, equipment?, session_minutes?, avoid?)` | weekly plan; added with the [weekly plan feature](#feature-weekly-workout-plan) | `planner.py` + `exercises.json`, no LLM |
+
+- **Plans as an artifact:** `create_weekly_plan` returns a short text for the LLM and the full plan as the tool's artifact (`{"plan": ...}`). The LLM never rewrites the plan; `ask()` passes it to the frontend unchanged.
 
 - **Sources:** `search_videos` and `summarize_video` also return their sources (title, timestamp, link with `&t=Ns`) next to the text. `ask()` collects them per turn for the frontend.
 - **Memory:** a LangGraph checkpointer saves every message under its `thread_id`. With `DATABASE_URL` set it uses `PostgresSaver` on Neon (survives restarts and works on serverless Vercel); otherwise `MemorySaver` (in RAM, local tests only).
@@ -356,8 +374,8 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 | Endpoint | Request | Response |
 |---|---|---|
 | `GET /api/health` | - | `{status: "ok"}` |
-| `GET /api/videos` | - | 18 videos: id, title, channel, duration, url, thumbnail |
-| `POST /api/chat` | `{message, thread_id?}` | `{answer, sources[], tools_used[], thread_id}`; no `thread_id` starts a new conversation |
+| `GET /api/videos` | - | all videos (now 32): id, title, channel, duration, url, thumbnail |
+| `POST /api/chat` | `{message, thread_id?}` | `{answer, sources[], tools_used[], plan?, thread_id}`; no `thread_id` starts a new conversation; `plan` is set when the agent built a weekly plan (typed models `Plan`, `PlanDay`, `PlanExercise`, `Cue`, `PlanRule`) |
 | `GET /api/history/{thread_id}` | - | all turns of a thread from Neon, so the frontend can reload a chat |
 | `POST /api/transcribe` | audio file (multipart, max 4 MB) | `{text}` from the OpenAI Whisper API (`whisper-1`) |
 
@@ -367,7 +385,7 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **CORS:** allows the Vite dev server (`http://localhost:5173`); change with `CORS_ORIGINS`. On Vercel frontend and API share one domain.
 - Endpoints are plain `def`, so FastAPI runs the blocking LangChain calls in a thread pool. The agent and the Neon connection pool are created on the first request and reused.
 
-**Tests (`backend/tests/test_api.py`):** 16 of 16 pass. 13 free tests (validation, file type and size, CORS, static endpoints) and 3 live tests (squat answer with citation and timestamp link, follow-up from memory, history, new thread, out-of-scope, unknown thread).
+**Tests (`backend/tests/test_api.py`):** 17 of 17 pass. 13 free tests (validation, file type and size, CORS, static endpoints) and 4 live tests (squat answer with citation and timestamp link, follow-up from memory, history, new thread, out-of-scope, unknown thread, and since the weekly plan feature: plan, "my knee hurts" follow-up, plan in the history).
 
 **Manual test with `curl` and a voice question made with macOS `say`:**
 - "How much creatine should I take per day?" -> transcribed -> answer "5 grams" cited to the beginner gym guide at 10:05. Checked: the creatine video gives no dose; the guide says "five grams every day".
@@ -381,7 +399,8 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **Citations as links:** every `[Video title, m:ss]` in an answer becomes a small `▶ 3:17` button that opens YouTube at that second (the full title shows on hover). Below each answer, "Sources" lists the videos and times the agent retrieved.
 - **Voice:** the 🎤 button records with the browser's `MediaRecorder` (max 60 s) and sends the audio to `/api/transcribe`. The text goes into the text box, so the user can check it before sending.
 - **Memory:** the `thread_id` is kept in `localStorage`. On reload the app loads the conversation from `/api/history`. "New chat" starts a new thread.
-- **Video list:** all 18 videos with thumbnail, length and channel, plus a "Summarize" button that asks the agent for a summary of that video.
+- **Video list:** all videos (18 then, 32 now) with thumbnail, length and channel, plus a "Summarize" button that asks the agent for a summary of that video.
+- **Weekly plan (added later):** a "Create my plan" button in the toolbar and on the empty chat opens the plan form; the plan appears as a card inside the answer.
 - **Layout:** light and dark mode follow the system setting. On phones (under 760 px) the video list moves behind a "Videos" button.
 - **Dev setup:** Vite forwards `/api` to FastAPI on port 8000, so the browser sees one origin, as it will on Vercel.
 
@@ -404,10 +423,10 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 ### Design pass: landing page and design system
 The site is called **Liftline** (lift + timeline: every answer points to a moment on a video's timeline). It follows a landing page design skill (page structure, conversion copy, and strict visual rules).
 
-- **Full screen hero:** a dark gym photo (CC0, Binyamin Mellish, credited in the footer) under a flat shade, an uppercase headline on the right, and two glass cards with real project data: the lengths of the 18 videos by topic (179 min) and the retrieval score (right video first for 11 of 12 test questions). Every section below is a full width band, alternating base, surface and black backgrounds, and the final call to action sits on the photo again. Orange accent (`#ff6b1a`) with dark button text for contrast.
+- **Full screen hero:** a dark gym photo (CC0, Binyamin Mellish, credited in the footer) under a flat shade, an uppercase headline on the right, and two glass cards with real project data: the lengths of the videos by topic (now 32 videos, 307 min) and the retrieval score (right video first for 11 of 12 test questions). Every section below is a full width band, alternating base, surface and black backgrounds, and the final call to action sits on the photo again. Orange accent (`#ff6b1a`) with dark button text for contrast.
 
 - **Pages:** `/` landing page, `/chat/` the chat app, `/privacy/`, `/terms/`, and a branded 404. Each is its own HTML file, so Vercel serves them as static files. `/chat`, `/privacy` and `/terms` redirect to the version with a slash (`vercel.json`).
-- **Landing page (layout A, classic hero plus sections):** hero with one call to action ("Ask your first question") and a real example answer with working timestamp links; problem and solution; 5 benefits; a large tagline whose words light up one by one while scrolling; how it works in 3 steps; test results as proof; the 18 videos; 9 FAQ answers; final call to action. All numbers come from this README's test results. There are no invented testimonials.
+- **Landing page (layout A, classic hero plus sections):** hero with one call to action ("Ask your first question") and a real example answer with working timestamp links; problem and solution; 6 benefits (including the weekly plan); a large tagline whose words light up one by one while scrolling; how it works in 3 steps; test results as proof; the 32 videos; 10 FAQ answers (including "Can it make a workout plan for me?"); final call to action. All numbers come from this README's test results. There are no invented testimonials.
 - **Design system (`src/styles/tokens.css`):** one font (Geist, with Geist Mono for timestamps); named text styles (`heading-1`, `body-6`, `caption-5`, ...) on the Tailwind type scale; spacing only from 2 to 96 px steps; Tailwind radii with nested radius = outer minus gap; flat backgrounds (the only gradient is on the hero heading text); approved dark backgrounds; Phosphor icons; one easing curve, `cubic-bezier(0.22, 1, 0.36, 1)`, animating only transform and opacity, with `prefers-reduced-motion` support.
 - **States:** skeleton loaders shaped like the video list and an answer (no spinners), a composed empty chat, inline errors, hover, press and focus styles on every button, and a skip-to-content link.
 - **SEO:** title, description, canonical, Open Graph and Twitter tags, `og.png` (1200 x 630), and FAQ schema (JSON-LD) built from `src/content/faq.js`.
@@ -437,7 +456,7 @@ form -> chat message -> agent -> create_weekly_plan tool -> planner.py (no LLM)
 - `pytest backend/tests/test_planner.py`: 2,405 tests. Every combination of goal, days, experience, equipment, session length and painful joints (2,400 plans) respects the equipment and the avoided joints, keeps 2 to 4 sets per exercise and fits the session length; every cue and rule points to a second inside its video.
 - Live API test: a plan request returns 4 days with demo links; "My knee hurts" keeps the 4 days and adds knees to avoid; the plan comes back from the history.
 - `npm test`: 9 tests, including "every exercise has a diagram" and the joined citation fix below.
-- Browser test (headless Chrome): form -> plan card with 4 day tabs and the chosen inputs -> diagrams, cue links with `&t=` -> video player starts at the demo second -> day 2 tab -> 11 cited rules -> "Make it 3 days instead" gives a 3 day plan with the same inputs -> plans come back after a reload -> no overflow at 390 px -> no console errors.
+- Browser test (headless Chrome): form -> plan card with 4 day tabs and the chosen inputs -> diagrams, cue links with `&t=` -> video player starts at the demo second -> day 2 tab -> 11 cited rules -> "Make it 3 days instead" gives a 3 day plan with the same inputs -> plans come back after a reload -> no overflow at 390 px -> no console errors. All 10 steps pass locally and on production (https://fitness-video-qa.vercel.app/chat/).
 
 **Fixed while testing:** with 32 videos the video section is about 8,000 px tall on phones, so the 10% scroll reveal threshold was never reached (now 0); the model once joined two citations in one bracket (`[A, 3:17; B, 2:03]`), which the link converter now splits.
 
