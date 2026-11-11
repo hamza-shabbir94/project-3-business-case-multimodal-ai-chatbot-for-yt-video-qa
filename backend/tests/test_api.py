@@ -92,8 +92,18 @@ def test_chat_follow_up_and_history():
 def test_chat_new_thread_and_out_of_scope():
     r = client.post("/api/chat", json={"message": "Give me a keto pancake recipe."}).json()
     assert len(r["thread_id"]) == 32  # a new thread_id was created
-    assert "don't cover" in r["answer"].lower() or "do not cover" in r["answer"].lower()
+    answer = r["answer"].lower()
+    # a recipe is either "not covered by the videos" or the polite off-topic reply; never an invented recipe
+    assert "don't cover" in answer or "do not cover" in answer or ("sorry" in answer and "fitness" in answer)
     assert r["sources"] == [] or "search_videos" in r["tools_used"]
+
+
+@pytest.mark.live
+def test_off_topic_question_gets_polite_scope_reply():
+    r = client.post("/api/chat", json={"message": "Can you let me know what the date is today?"}).json()
+    answer = r["answer"].lower()
+    assert "sorry" in answer and "fitness" in answer
+    assert r["tools_used"] == []  # no search for an off-topic question
 
 
 @pytest.mark.live

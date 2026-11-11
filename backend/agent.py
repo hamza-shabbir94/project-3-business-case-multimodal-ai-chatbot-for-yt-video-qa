@@ -69,6 +69,32 @@ BARE_TIME = re.compile(r"\[(\d{1,2}:\d{2}(?::\d{2})?)\]")  # [1:00] or [1:02:03]
 
 NOT_FOUND = "No video matches '{query}'. Call list_videos to see the available titles and IDs."
 
+# Off-topic check. It runs as its own small LLM call before the agent, because a refusal rule
+# inside the agent prompt made gpt-4o-mini also refuse real questions (creatine, sleep).
+TOPIC_PROMPT = """You protect a fitness chatbot from questions it cannot answer.
+Reply OFF only if the message is clearly about something with no link to the body, health or exercise, for example:
+the date or time, the weather, news, politics, sports results, money or prices, movies, travel, translation, coding, math homework or general knowledge.
+Reply ON for everything else, including training, exercises, workout plans, food, calories, diet, supplements, sleep, rest, pain, injuries, body weight,
+greetings, thanks, short answers like "yes" or "4 days", any follow-up, questions about the assistant itself (what it can do, which languages it speaks), questions about the videos ("summarize that video", "who made it?") and questions about this conversation ("what did I ask first?").
+When unsure, reply ON. Reply with one word: ON or OFF.
+{previous}
+Message: {message}"""
+
+OFF_TOPIC_REPLY = ("Sorry, I can't help with that. I can only answer questions about fitness: training, exercise technique, "
+                   "nutrition, sleep and recovery, based on the videos. For example, ask \"How much protein should I eat?\" "
+                   "or ask me to create a weekly workout plan.")
+
+
+def is_on_topic(message: str, previous_answer: str = "") -> bool:
+    """True unless the message is clearly not about fitness. When unsure, the answer is yes.
+
+    previous_answer: start of the assistant's last reply, so follow-ups like "give me the link" are understood.
+    """
+    previous = f"\nThe assistant's previous reply started with: {previous_answer[:300]}\n" if previous_answer else ""
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=2)
+    reply = llm.invoke(TOPIC_PROMPT.format(message=message, previous=previous)).content.strip().lower()
+    return not reply.startswith("off")
+
 
 @tool(response_format="content_and_artifact")
 def search_videos(query: str, video_id: str | None = None) -> tuple[str, list[dict]]:
@@ -205,8 +231,15 @@ def _summarize_turn(turn: list) -> dict:
 
 
 def ask(agent, question: str, thread_id: str) -> dict:
-    """Send one user message. Returns {answer, sources, tools_used} for this turn only."""
+    """Send one user message. Returns {answer, sources, tools_used, plan} for this turn only."""
     config = {"configurable": {"thread_id": thread_id}}
+    state = agent.get_state(config)
+    earlier = state.values.get("messages", []) if state and state.values else []
+    last_answer = next((m.content for m in reversed(earlier) if isinstance(m, AIMessage) and m.content), "")
+    if not is_on_topic(question, last_answer):
+        # polite fixed reply, saved in the thread like a normal turn so the history keeps it
+        agent.update_state(config, {"messages": [HumanMessage(question), AIMessage(OFF_TOPIC_REPLY)]}, as_node="model")
+        return {"answer": OFF_TOPIC_REPLY, "sources": [], "tools_used": [], "plan": None}
     messages = agent.invoke({"messages": [HumanMessage(question)]}, config)["messages"]
     last_human = max(i for i, m in enumerate(messages) if isinstance(m, HumanMessage))
     return _summarize_turn(messages[last_human + 1:])

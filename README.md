@@ -147,7 +147,7 @@ PIPELINE 2: ASK (Vercel, every question)
 │   ├── exercises.json        # 23 exercises: demo second + form cues (built by scripts/build_exercises.py)
 │   ├── app.py                # FastAPI: /api/chat, /api/transcribe, /api/history, /api/videos (Phase 5)
 │   ├── openapi.json          # API contract, generated from app.py (Phase 5)
-│   ├── tests/test_api.py     # API tests: 13 free + 4 live (Phase 5)
+│   ├── tests/test_api.py     # API tests: 13 free + 5 live (Phase 5)
 │   ├── tests/test_planner.py # plan builder: 2,405 free tests (every input combination)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
 ├── frontend/                 # React + Vite site (Phase 6): one HTML file per page
@@ -226,7 +226,7 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 .venv/bin/uvicorn app:app --app-dir backend --reload
 .venv/bin/pytest backend/tests -m "not live"        # free tests (2,418, includes the plan builder)
 .venv/bin/pytest backend/tests/test_planner.py       # plan builder only (2,405 tests, no API calls)
-.venv/bin/pytest backend/tests                       # + 4 live tests (OpenAI, Pinecone, Neon)
+.venv/bin/pytest backend/tests                       # + 5 live tests (OpenAI, Pinecone, Neon)
 
 # Phase 6: frontend (start the API first; Vite forwards /api to it)
 cd frontend && npm run dev                           # http://localhost:5173
@@ -347,6 +347,7 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **Sources:** `search_videos` and `summarize_video` also return their sources (title, timestamp, link with `&t=Ns`) next to the text. `ask()` collects them per turn for the frontend.
 - **Memory:** a LangGraph checkpointer saves every message under its `thread_id`. With `DATABASE_URL` set it uses `PostgresSaver` on Neon (survives restarts and works on serverless Vercel); otherwise `MemorySaver` (in RAM, local tests only).
 - **Citation fix:** the summary LLM copied the bare `[1:00]` markers from the transcript, and the agent then dropped titles in the rest of the thread. Prompt rules did not fix this, so `summarize_video` now rewrites `[1:00]` to `[Title, 1:00]` with a regex.
+- **Off-topic check (added later):** before the agent runs, `is_on_topic()` makes one small gpt-4o-mini call that answers ON or OFF. It sees the message and the start of the previous answer, so follow-ups like "give me the link to that video" count as ON. OFF (the date, the weather, news, coding, ...) returns a fixed polite reply: "Sorry, I can't help with that. I can only answer questions about fitness...", saved in the thread so the history keeps it. Why not a rule in the agent prompt? Every refusal rule we tried there made gpt-4o-mini also refuse real questions such as "Is creatine safe?" and "How much sleep do I need?". Tested on 72 messages (52 fitness, 20 off-topic): 0 wrong.
 
 **Demo (`scripts/chat.py --demo`), one thread, 7 turns:**
 
@@ -385,7 +386,7 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - **CORS:** allows the Vite dev server (`http://localhost:5173`); change with `CORS_ORIGINS`. On Vercel frontend and API share one domain.
 - Endpoints are plain `def`, so FastAPI runs the blocking LangChain calls in a thread pool. The agent and the Neon connection pool are created on the first request and reused.
 
-**Tests (`backend/tests/test_api.py`):** 17 of 17 pass. 13 free tests (validation, file type and size, CORS, static endpoints) and 4 live tests (squat answer with citation and timestamp link, follow-up from memory, history, new thread, out-of-scope, unknown thread, and since the weekly plan feature: plan, "my knee hurts" follow-up, plan in the history).
+**Tests (`backend/tests/test_api.py`):** 18 of 18 pass. 13 free tests (validation, file type and size, CORS, static endpoints) and 5 live tests (squat answer with citation and timestamp link, follow-up from memory, history, new thread, out-of-scope, unknown thread, and since the weekly plan feature: plan, "my knee hurts" follow-up, plan in the history; and the polite reply to an off-topic question).
 
 **Manual test with `curl` and a voice question made with macOS `say`:**
 - "How much creatine should I take per day?" -> transcribed -> answer "5 grams" cited to the beginner gym guide at 10:05. Checked: the creatine video gives no dose; the guide says "five grams every day".
