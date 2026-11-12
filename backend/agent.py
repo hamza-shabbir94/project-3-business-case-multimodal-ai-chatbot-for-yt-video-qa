@@ -1,7 +1,7 @@
 """Phase 4: LangGraph agent with tools and memory.
 
     user message + thread_id
-        -> agent (gpt-4o-mini) decides which tool(s) to call
+        -> agent (gpt-6-luna) decides which tool(s) to call
              search_videos   : top-k transcript chunks from Pinecone (optionally one video)
              list_videos     : the videos in the knowledge base
              video_info      : title, channel, length, upload date, link of one video
@@ -70,7 +70,7 @@ BARE_TIME = re.compile(r"\[(\d{1,2}:\d{2}(?::\d{2})?)\]")  # [1:00] or [1:02:03]
 NOT_FOUND = "No video matches '{query}'. Call list_videos to see the available titles and IDs."
 
 # Off-topic check. It runs as its own small LLM call before the agent, because a refusal rule
-# inside the agent prompt made gpt-4o-mini also refuse real questions (creatine, sleep).
+# inside the agent prompt made the model also refuse real questions (creatine, sleep).
 TOPIC_PROMPT = """You protect a fitness chatbot from questions it cannot answer.
 Reply OFF only if the message is clearly about something with no link to the body, health or exercise, for example:
 the date or time, the weather, news, politics, sports results, money or prices, movies, travel, translation, coding, math homework or general knowledge.
@@ -91,8 +91,8 @@ def is_on_topic(message: str, previous_answer: str = "") -> bool:
     previous_answer: start of the assistant's last reply, so follow-ups like "give me the link" are understood.
     """
     previous = f"\nThe assistant's previous reply started with: {previous_answer[:300]}\n" if previous_answer else ""
-    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=2)
-    reply = llm.invoke(TOPIC_PROMPT.format(message=message, previous=previous)).content.strip().lower()
+    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=300)
+    reply = str(llm.invoke(TOPIC_PROMPT.format(message=message, previous=previous)).text).strip().lower()
     return not reply.startswith("off")
 
 
@@ -145,13 +145,13 @@ def summarize_video(video: str, focus: str | None = None) -> tuple[str, list[dic
     record = find_video(video)
     if record is None:
         return NOT_FOUND.format(query=video), []
-    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=900)
+    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=3000)
     prompt = SUMMARY_PROMPT.format(
         title=record["title"], channel=record["channel"],
         focus=f"Focus on: {focus}\n" if focus else "",
         transcript=transcript_with_timestamps(record),
     )
-    summary = llm.invoke(prompt).content
+    summary = str(llm.invoke(prompt).text)  # .text: gpt-6-luna returns a list of text blocks
 
     # The model copies the bare [m:ss] markers of the transcript. Turn them into full
     # citation tags in code (prompting alone did not work) and return them as sources.
@@ -204,7 +204,7 @@ def get_checkpointer():
 
 
 def build_agent(checkpointer=None):
-    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=1000)
+    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=3000)
     return create_agent(
         llm, TOOLS, system_prompt=SYSTEM_PROMPT,
         checkpointer=checkpointer if checkpointer is not None else get_checkpointer(),
@@ -226,7 +226,7 @@ def _summarize_turn(turn: list) -> dict:
                 if s["url"] not in seen:
                     seen.add(s["url"])
                     sources.append(s)
-    answer = turn[-1].content if turn and isinstance(turn[-1], AIMessage) else ""
+    answer = str(turn[-1].text) if turn and isinstance(turn[-1], AIMessage) else ""
     return {"answer": answer, "sources": sources, "tools_used": tools_used, "plan": plan}
 
 
@@ -235,7 +235,7 @@ def ask(agent, question: str, thread_id: str) -> dict:
     config = {"configurable": {"thread_id": thread_id}}
     state = agent.get_state(config)
     earlier = state.values.get("messages", []) if state and state.values else []
-    last_answer = next((m.content for m in reversed(earlier) if isinstance(m, AIMessage) and m.content), "")
+    last_answer = next((str(m.text) for m in reversed(earlier) if isinstance(m, AIMessage) and m.text), "")
     if not is_on_topic(question, last_answer):
         # polite fixed reply, saved in the thread like a normal turn so the history keeps it
         agent.update_state(config, {"messages": [HumanMessage(question), AIMessage(OFF_TOPIC_REPLY)]}, as_node="model")

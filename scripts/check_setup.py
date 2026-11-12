@@ -32,7 +32,7 @@ def main() -> None:
 
     from langchain_openai import ChatOpenAI
 
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, max_tokens=20)
+    llm = ChatOpenAI(model="gpt-6-luna", max_tokens=200)
     reply = llm.invoke("Reply with exactly: setup ok")
     print(f"\nOpenAI reply: {reply.content}")
     print(f"Now open LangSmith, project '{os.getenv('LANGSMITH_PROJECT')}'. You should see this call as a trace.")
