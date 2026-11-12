@@ -98,7 +98,7 @@ It also builds a **weekly workout plan** from the user's goal, days per week, ex
 | Chunks + documents | LangChain `Document`, custom time-based chunker |
 | Embeddings | OpenAI `text-embedding-3-small` (1536 dims) |
 | Vector database | Pinecone (serverless, cosine) via `langchain-pinecone` |
-| LLM | OpenAI `gpt-6-luna` (a reasoning model; until 12 November 2026 `gpt-4o-mini`) |
+| LLM | OpenAI `gpt-4o-mini` |
 | Agent + memory | LangGraph agent (`create_agent`, 5 tools) + Postgres checkpointer on Neon |
 | Weekly plan | Plain Python rules (`planner.py`, no LLM) + exercise catalog (`exercises.json`) |
 | Backend | FastAPI on Vercel |
@@ -122,7 +122,7 @@ PIPELINE 1: INGEST (local scripts, once per video)
 
 PIPELINE 2: ASK (Vercel, every question)
 
-  User ──> React + Vite ──> FastAPI /api/chat ──> LangGraph agent (gpt-6-luna) 
+  User ──> React + Vite ──> FastAPI /api/chat ──> LangGraph agent (gpt-4o-mini)
               ^                   │                   │        │
               │            /api/transcribe            │        └── memory: Postgres (Neon)
               │            (voice -> Whisper)         v
@@ -140,7 +140,7 @@ PIPELINE 2: ASK (Vercel, every question)
 ├── backend/
 │   ├── data/                 # 32 transcripts as JSON (Phase 1, extended for the weekly plan)
 │   ├── vectorstore.py        # Pinecone index + OpenAI embeddings, shared (Phase 2)
-│   ├── rag.py                # baseline RAG chain: retriever -> prompt -> gpt-6-luna (Phase 3)
+│   ├── rag.py                # baseline RAG chain: retriever -> prompt -> gpt-4o-mini (Phase 3)
 │   ├── catalog.py            # reads full transcripts for list / info / summarize (Phase 4)
 │   ├── agent.py              # LangGraph agent: 5 tools + memory per thread_id (Phase 4)
 │   ├── planner.py            # weekly plan builder: rules from the videos, no LLM (weekly plan)
@@ -261,7 +261,7 @@ Phases 1 to 6 were built and tested with the first 18 videos; their results belo
 ### Phase 0: Setup
 - Folder structure, `.gitignore` (keeps `.env`, `*.key`, `secrets/`, `.venv/` out of git), `.env.example` with placeholders.
 - Two requirement files: `backend/requirements.txt` holds API clients only, because Vercel functions have a size limit. `scripts/requirements.txt` adds the local tools.
-- `scripts/check_setup.py` reports which keys are set (never their values) and makes one `gpt-6-luna` call.
+- `scripts/check_setup.py` reports which keys are set (never their values) and makes one `gpt-4o-mini` call.
 - **Result:** the call returned `setup ok` and appeared as a trace in LangSmith project `yt-video-qa`.
 
 ### Phase 1: Data Collection
@@ -297,19 +297,19 @@ For each link in `scripts/videos.txt`, `scripts/ingest.py`:
 `backend/rag.py` builds an LCEL chain with no agent yet:
 
 ```
-question -> Pinecone retriever (top-k chunks) -> prompt with excerpts -> gpt-6-luna -> answer + sources
+question -> Pinecone retriever (top-k chunks) -> prompt with excerpts -> gpt-4o-mini -> answer + sources
 ```
 
 - **Prompt rules:** answer only from the excerpts; say "the videos don't cover it" otherwise; cite every fact as `[Video title, m:ss]`; keep the context of numbers (units, body weight, bulking or cutting); give every step for how-to questions; flag numbers that look wrong.
 - Each excerpt is shown to the model with the exact citation tag to copy, so citations have one format the frontend can turn into links.
 - The chain returns the retrieved documents too, so sources can be shown as links that open the video at that second.
-- `max_tokens=2000` (gpt-6-luna only accepts the default temperature, and its limit also counts its thinking; with gpt-4o-mini it was `temperature=0`, `max_tokens=400`). Every run is traced in LangSmith (run name `baseline_rag`).
+- `temperature=0`, `max_tokens=400`. Every run is traced in LangSmith (run name `baseline_rag`).
 
 **Test set:** `eval/qa_dataset.csv` has 13 questions written from the transcripts, each with the expected video(s) and a reference answer. It covers protein, creatine, squat depth, training volume, progressive overload, fat loss, sleep, push pull legs, warm-up and dieting, plus one caption-error question (q03) and one out-of-scope question (q13).
 
 **Retrieval (hit@k, 12 in-scope questions):** hit@1 = 92%, hit@2 to hit@8 = 100%.
 
-**Tuning:** two runs on the same questions, saved in `eval/results/`. These runs used gpt-4o-mini, the model before the switch to gpt-6-luna.
+**Tuning:** two runs on the same questions, saved in `eval/results/`.
 
 | | v1: k=4, first prompt | v2: k=6, improved prompt |
 |---|---|---|
@@ -329,7 +329,7 @@ question -> Pinecone retriever (top-k chunks) -> prompt with excerpts -> gpt-6-l
 `backend/agent.py` builds a LangGraph agent with LangChain's `create_agent` (the teacher's notebooks use the older `initialize_agent`, which langchain 1.x removed).
 
 ```
-user message + thread_id -> agent (gpt-6-luna) -> picks tool(s) -> answer with [Title, m:ss] citations
+user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with [Title, m:ss] citations
                                ^                                      |
                                └──── memory: all messages of the thread (checkpointer)
 ```
@@ -347,7 +347,7 @@ user message + thread_id -> agent (gpt-6-luna) -> picks tool(s) -> answer with [
 - **Sources:** `search_videos` and `summarize_video` also return their sources (title, timestamp, link with `&t=Ns`) next to the text. `ask()` collects them per turn for the frontend.
 - **Memory:** a LangGraph checkpointer saves every message under its `thread_id`. With `DATABASE_URL` set it uses `PostgresSaver` on Neon (survives restarts and works on serverless Vercel); otherwise `MemorySaver` (in RAM, local tests only).
 - **Citation fix:** the summary LLM copied the bare `[1:00]` markers from the transcript, and the agent then dropped titles in the rest of the thread. Prompt rules did not fix this, so `summarize_video` now rewrites `[1:00]` to `[Title, 1:00]` with a regex.
-- **Off-topic check (added later):** before the agent runs, `is_on_topic()` makes one small gpt-6-luna call that answers ON or OFF. It sees the message and the start of the previous answer, so follow-ups like "give me the link to that video" count as ON. OFF (the date, the weather, news, coding, ...) returns a fixed polite reply: "Sorry, I can't help with that. I can only answer questions about fitness...", saved in the thread so the history keeps it. Why not a rule in the agent prompt? Every refusal rule we tried there made the model (then gpt-4o-mini) also refuse real questions such as "Is creatine safe?" and "How much sleep do I need?". Tested on 72 messages (52 fitness, 20 off-topic) with gpt-4o-mini: 0 wrong. Tested again on 43 messages (30 fitness, 13 off-topic) with gpt-6-luna: 0 wrong.
+- **Off-topic check (added later):** before the agent runs, `is_on_topic()` makes one small gpt-4o-mini call that answers ON or OFF. It sees the message and the start of the previous answer, so follow-ups like "give me the link to that video" count as ON. OFF (the date, the weather, news, coding, ...) returns a fixed polite reply: "Sorry, I can't help with that. I can only answer questions about fitness...", saved in the thread so the history keeps it. Why not a rule in the agent prompt? Every refusal rule we tried there made gpt-4o-mini also refuse real questions such as "Is creatine safe?" and "How much sleep do I need?". Tested on 72 messages (52 fitness, 20 off-topic): 0 wrong.
 
 **Demo (`scripts/chat.py --demo`), one thread, 7 turns:**
 
@@ -479,13 +479,13 @@ https://<project>.vercel.app/*      ->  frontend (Vite build, served from the CD
 
 **Live test (production, headless Chrome):** all 8 chat steps pass on https://fitness-video-qa.vercel.app (answer with 10 citation links, follow-up from memory, reload from Neon, voice question, new chat, phone layout, no console errors). The landing page checks pass in light and dark at 1440 px and 390 px. Unknown paths return the branded 404 page with status 404 (a service-level route in `vercel.json`).
 
-### Model switch: gpt-4o-mini to gpt-6-luna (12 November 2026)
-All LLM calls (RAG chain, agent, `summarize_video`, topic check, setup check) now use `gpt-6-luna`. It is a reasoning model, so three things changed:
-- **No `temperature=0`:** the model only accepts the default temperature and returns an error otherwise.
-- **Higher `max_tokens`:** the limit also counts the model's thinking. The topic check went from 2 to 300 tokens, the RAG chain from 400 to 2000, the agent and `summarize_video` to 3000. With the old limits the call fails.
-- **Answer text is read with `.text`:** the model returns a list of text blocks, not a plain string.
+### Model test: gpt-6-luna, then back to gpt-4o-mini (12 November 2026)
+We tried `gpt-6-luna` for all LLM calls and then went back to `gpt-4o-mini`.
 
-**Tests with gpt-6-luna:** all 2,423 pytest tests pass (5 live) and all 9 vitest tests. Topic check: 43 of 43 messages correct, and follow-ups still count as ON. Spot checks (protein, creatine, sleep, squat summary) cite the videos correctly. "Does caffeine help my workout?" now only says the videos don't cover it, with no outside knowledge. Answers take 8 to 18 s, slower than with gpt-4o-mini. The Phase 3 tuning numbers above were measured with gpt-4o-mini.
+- **What gpt-6-luna needed:** it is a reasoning model, so it rejects `temperature=0` and its `max_tokens` also counts its thinking (the 2-token topic check failed). It returns its answer as a list of text blocks, so the code now reads answers with `.text`, which works for both models.
+- **What we saw:** all tests passed and it stayed inside the videos for "Does caffeine help my workout?". But answers took 8 to 18 s, and the same question gave different wording each time, because the temperature cannot be 0.
+- **Why we went back:** gpt-4o-mini is faster, gives nearly the same answer to the same question (fair, repeatable tests), and all the results in this README were measured with it.
+- **Tried and dropped:** a prompt rule to stop gpt-4o-mini adding general knowledge after "the videos don't cover it". It fixed the caffeine answer, but "What is progressive overload?" then skipped the search and said the videos don't cover it. Same lesson as the off-topic check: extra refusal rules in the prompt make gpt-4o-mini refuse real questions.
 
 ## Known Issues and Limitations
 
@@ -494,7 +494,8 @@ All LLM calls (RAG chain, agent, `summarize_video`, topic check, setup check) no
 - **Extra citations:** the model sometimes adds a citation to a chunk that is only loosely related (for example a progressive overload video cited in the sets-per-week answer).
 - **Long how-to answers:** the Phase 3 chain misses parts of routines spread across a whole video (the warm-up answer misses the 5-minute cycling step). Fixed in Phase 4: the agent calls `summarize_video`, which reads the whole transcript.
 - **Chunk boundaries:** a number and its context can land in different chunks. Example: the agent gives "120-165 g of protein" without "for a 75 kg person", because the "1.6-2.2 g/kg" sentence is in the previous chunk.
-- **Agent latency:** 8-18 s per answer with gpt-6-luna, which thinks before it answers (2-16 s with gpt-4o-mini). The agent needs one LLM call to pick a tool and one to answer; `summarize_video` adds a third. The plain RAG chain took about 2.5 s with gpt-4o-mini.
+- **Outside knowledge on uncovered topics:** for a few topics the videos don't cover (caffeine, coffee), gpt-4o-mini says so and then adds general knowledge without a citation. A prompt rule against it made other answers worse (see the model test above).
+- **Agent latency:** 2-16 s per answer (the agent needs one LLM call to pick a tool and one to answer; `summarize_video` adds a third). The plain RAG chain takes about 2.5 s.
 - **Tool choice is not always ideal:** for "Summarize the creatine video" the agent sometimes uses `search_videos` instead of `summarize_video`. The answer is still correct, but it may be less complete.
 - **Calculated numbers:** the agent sometimes works out its own example from a video's range ("for 180 lbs, about 145-218 g"). The math is close, but the number is not said in any video. To be measured in the Phase 8 evaluation.
 - **Public API with no login:** anyone with the URL can ask questions, which costs OpenAI credits. Set a monthly spending limit in the OpenAI dashboard; rate limiting would be the next step.

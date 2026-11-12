@@ -1,7 +1,7 @@
 """Phase 4: LangGraph agent with tools and memory.
 
     user message + thread_id
-        -> agent (gpt-6-luna) decides which tool(s) to call
+        -> agent (gpt-4o-mini) decides which tool(s) to call
              search_videos   : top-k transcript chunks from Pinecone (optionally one video)
              list_videos     : the videos in the knowledge base
              video_info      : title, channel, length, upload date, link of one video
@@ -43,8 +43,7 @@ Plans:
 - If the user mentions pain or an injury, use avoid, and say they should see a physiotherapist or doctor.
 
 Rules:
-- Answer ONLY from tool results. If they do not contain the answer, say that the videos don't cover it. Do not use outside knowledge.
-- After each fact, copy the citation tag from the tool result exactly, for example [How Sleep Powers Muscle Growth, 7:20]. Every citation has the full video title and the time, even when all facts come from one video. Never write only [7:20].
+- Answer ONLY from tool results. If they do not contain the answer, say that the videos don't cover it. Do not use outside knowledge.- After each fact, copy the citation tag from the tool result exactly, for example [How Sleep Powers Muscle Growth, 7:20]. Every citation has the full video title and the time, even when all facts come from one video. Never write only [7:20].
 - Keep the context of every number: units, body weight, and whether it is for bulking, cutting or general health. Prefer per-kilogram ranges over single examples, and say who an example applies to.
 - If the question asks how to do something, give all the steps or parts the results mention.
 - When several videos answer the question, combine them and say where they agree or differ.
@@ -70,7 +69,7 @@ BARE_TIME = re.compile(r"\[(\d{1,2}:\d{2}(?::\d{2})?)\]")  # [1:00] or [1:02:03]
 NOT_FOUND = "No video matches '{query}'. Call list_videos to see the available titles and IDs."
 
 # Off-topic check. It runs as its own small LLM call before the agent, because a refusal rule
-# inside the agent prompt made the model also refuse real questions (creatine, sleep).
+# inside the agent prompt made gpt-4o-mini also refuse real questions (creatine, sleep).
 TOPIC_PROMPT = """You protect a fitness chatbot from questions it cannot answer.
 Reply OFF only if the message is clearly about something with no link to the body, health or exercise, for example:
 the date or time, the weather, news, politics, sports results, money or prices, movies, travel, translation, coding, math homework or general knowledge.
@@ -91,7 +90,7 @@ def is_on_topic(message: str, previous_answer: str = "") -> bool:
     previous_answer: start of the assistant's last reply, so follow-ups like "give me the link" are understood.
     """
     previous = f"\nThe assistant's previous reply started with: {previous_answer[:300]}\n" if previous_answer else ""
-    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=300)
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=2)
     reply = str(llm.invoke(TOPIC_PROMPT.format(message=message, previous=previous)).text).strip().lower()
     return not reply.startswith("off")
 
@@ -145,13 +144,13 @@ def summarize_video(video: str, focus: str | None = None) -> tuple[str, list[dic
     record = find_video(video)
     if record is None:
         return NOT_FOUND.format(query=video), []
-    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=3000)
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=900)
     prompt = SUMMARY_PROMPT.format(
         title=record["title"], channel=record["channel"],
         focus=f"Focus on: {focus}\n" if focus else "",
         transcript=transcript_with_timestamps(record),
     )
-    summary = str(llm.invoke(prompt).text)  # .text: gpt-6-luna returns a list of text blocks
+    summary = str(llm.invoke(prompt).text)  # .text works for plain strings and for lists of text blocks
 
     # The model copies the bare [m:ss] markers of the transcript. Turn them into full
     # citation tags in code (prompting alone did not work) and return them as sources.
@@ -204,7 +203,7 @@ def get_checkpointer():
 
 
 def build_agent(checkpointer=None):
-    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=3000)
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=1000)
     return create_agent(
         llm, TOOLS, system_prompt=SYSTEM_PROMPT,
         checkpointer=checkpointer if checkpointer is not None else get_checkpointer(),

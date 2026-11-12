@@ -1,6 +1,6 @@
 """Phase 3: baseline RAG chain (no agent yet).
 
-    question -> retriever (Pinecone, top-k chunks) -> prompt with excerpts -> gpt-6-luna -> answer
+    question -> retriever (Pinecone, top-k chunks) -> prompt with excerpts -> gpt-4o-mini -> answer
 
 The answer cites every fact as [Video title, m:ss]. The chain also returns the
 retrieved documents, so the caller can show clickable sources.
@@ -14,8 +14,7 @@ from langchain_openai import ChatOpenAI
 
 from vectorstore import get_vectorstore
 
-# gpt-6-luna is a reasoning model: it only accepts the default temperature, and max_tokens also counts its thinking.
-LLM_MODEL = "gpt-6-luna"
+LLM_MODEL = "gpt-4o-mini"
 DEFAULT_K = 6  # 4 missed steps of multi-part answers (e.g. the 3-part warm-up); see eval/results/
 
 SYSTEM_PROMPT = """You are a fitness assistant. You answer questions using ONLY the YouTube transcript excerpts below.
@@ -63,7 +62,7 @@ def get_sources(docs: list[Document]) -> list[dict]:
 def build_rag_chain(k: int = DEFAULT_K) -> Runnable:
     """Input: a question string. Output: {question, docs, context, answer}."""
     retriever = get_vectorstore().as_retriever(search_kwargs={"k": k})
-    llm = ChatOpenAI(model=LLM_MODEL, max_tokens=2000)
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0, max_tokens=400)
 
     chain = (
         RunnableParallel(question=RunnablePassthrough(), docs=retriever)
