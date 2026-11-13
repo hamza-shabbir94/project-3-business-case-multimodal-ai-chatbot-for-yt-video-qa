@@ -62,6 +62,23 @@ def test_transcribe_rejects_empty_file():
     assert client.post("/api/transcribe", files=files).status_code == 422
 
 
+def test_transcribe_asks_whisper_for_english(monkeypatch):
+    import app as app_module
+    calls = {}
+
+    class FakeTranscriptions:
+        def create(self, **kwargs):
+            calls.update(kwargs)
+            return type("Result", (), {"text": " How much protein should I eat? "})()
+
+    fake_client = type("Client", (), {"audio": type("Audio", (), {"transcriptions": FakeTranscriptions()})()})()
+    monkeypatch.setattr(app_module, "get_openai", lambda: fake_client)
+    files = {"audio": ("question.webm", b"fake audio", "audio/webm")}
+    r = client.post("/api/transcribe", files=files)
+    assert r.status_code == 200 and r.json() == {"text": "How much protein should I eat?"}
+    assert calls["language"] == "en"  # never guess the language from the accent
+
+
 def test_cors_allows_vite_dev_server():
     r = client.options("/api/chat", headers={"Origin": "http://localhost:5173",
                                              "Access-Control-Request-Method": "POST",

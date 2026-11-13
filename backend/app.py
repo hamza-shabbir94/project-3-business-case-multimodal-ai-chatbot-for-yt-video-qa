@@ -32,6 +32,9 @@ log = logging.getLogger("api")
 MAX_MESSAGE_CHARS = 2000
 MAX_AUDIO_BYTES = 4 * 1024 * 1024  # Vercel rejects request bodies over 4.5 MB
 TRANSCRIBE_MODEL = "whisper-1"
+# The videos and answers are in English. Without a fixed language, Whisper guesses it from the accent
+# and sometimes wrote an English question in Urdu (or another) script.
+TRANSCRIBE_LANGUAGE = "en"
 # Vocabulary hint for Whisper: without it "creatine" was heard as "creating".
 TRANSCRIBE_PROMPT = ("A question about fitness: creatine, protein, hypertrophy, progressive overload, "
                      "deadlift, squat, bench press, push pull legs, cardio, calories, warm-up.")
@@ -214,7 +217,7 @@ def transcribe(audio: UploadFile = File(description="Recorded question, e.g. aud
     try:
         result = get_openai().audio.transcriptions.create(
             model=TRANSCRIBE_MODEL, file=(audio.filename or "question.webm", data, content_type),
-            prompt=TRANSCRIBE_PROMPT)
+            prompt=TRANSCRIBE_PROMPT, language=TRANSCRIBE_LANGUAGE)
     except Exception:
         log.exception("transcription failed")
         raise HTTPException(502, "Could not transcribe the audio. Please try again.")

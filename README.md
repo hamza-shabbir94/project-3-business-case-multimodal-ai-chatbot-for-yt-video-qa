@@ -147,7 +147,7 @@ PIPELINE 2: ASK (Vercel, every question)
 │   ├── exercises.json        # 23 exercises: demo second + form cues (built by scripts/build_exercises.py)
 │   ├── app.py                # FastAPI: /api/chat, /api/transcribe, /api/history, /api/videos (Phase 5)
 │   ├── openapi.json          # API contract, generated from app.py (Phase 5)
-│   ├── tests/test_api.py     # API tests: 13 free + 5 live (Phase 5)
+│   ├── tests/test_api.py     # API tests: 14 free + 5 live (Phase 5)
 │   ├── tests/test_planner.py # plan builder: 2,405 free tests (every input combination)
 │   └── requirements.txt      # API clients only, for Vercel (no torch)
 ├── frontend/                 # React + Vite site (Phase 6): one HTML file per page
@@ -224,7 +224,7 @@ Required keys: `OPENAI_API_KEY`, `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`, 
 
 # Phase 5: run the API (docs at http://127.0.0.1:8000/docs)
 .venv/bin/uvicorn app:app --app-dir backend --reload
-.venv/bin/pytest backend/tests -m "not live"        # free tests (2,418, includes the plan builder)
+.venv/bin/pytest backend/tests -m "not live"        # free tests (2,419, includes the plan builder)
 .venv/bin/pytest backend/tests/test_planner.py       # plan builder only (2,405 tests, no API calls)
 .venv/bin/pytest backend/tests                       # + 5 live tests (OpenAI, Pinecone, Neon)
 
@@ -392,6 +392,7 @@ user message + thread_id -> agent (gpt-4o-mini) -> picks tool(s) -> answer with 
 - "How much creatine should I take per day?" -> transcribed -> answer "5 grams" cited to the beginner gym guide at 10:05. Checked: the creatine video gives no dose; the guide says "five grams every day".
 - Follow-up "Is it safe for teenagers?" -> "the videos do not specifically address teenagers", plus what they say about general safety.
 - **Fix:** Whisper first heard "creatine" as "creating". A vocabulary `prompt` (creatine, hypertrophy, deadlift, ...) fixed it. Silence returns 422 instead of an empty question.
+- **Fix (13 Nov 2026):** Whisper guessed the language from the accent and sometimes wrote an English voice question in Urdu script. `/api/transcribe` now sends `language="en"`, so the text is always English.
 
 ### Phase 6: React + Vite Frontend
 `frontend/` is a single-page chat app (React 19, Vite 8, `react-markdown` for the answer formatting).
